@@ -1,0 +1,117 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-jetbrains-mono);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-heading: var(--font-jetbrains-mono);
+  --font-display: var(--font-geist);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* AQI categories: fill (dots, bars), tint (backgrounds), ink (text on tint) */
+  --color-aqi-good: #4caf7a;
+  --color-aqi-good-tint: #e4f3ea;
+  --color-aqi-good-ink: #1d5e3c;
+  --color-aqi-moderate: #e3bc2e;
+  --color-aqi-moderate-tint: #fbf4d9;
+  --color-aqi-moderate-ink: #6a4b00;
+  --color-aqi-sensitive: #f08a3c;
+  --color-aqi-sensitive-tint: #fdebdc;
+  --color-aqi-sensitive-ink: #8a3e06;
+  --color-aqi-unhealthy: #e2534a;
+  --color-aqi-unhealthy-tint: #fbe3e1;
+  --color-aqi-unhealthy-ink: #8e1f18;
+  --color-aqi-very-unhealthy: #9157a8;
+  --color-aqi-very-unhealthy-tint: #f1e6f5;
+  --color-aqi-very-unhealthy-ink: #5e2a73;
+  --color-aqi-hazardous: #7d2638;
+  --color-aqi-hazardous-tint: #f3e0e4;
+  --color-aqi-hazardous-ink: #6a1a2a;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  --shadow-raised: 0 10px 30px rgb(16 32 26 / 0.07);
+}
+
+:root {
+  --background: #f7f9f6;
+  --foreground: #10201a;
+  --card: #ffffff;
+  --card-foreground: #10201a;
+  --popover: #ffffff;
+  --popover-foreground: #10201a;
+  --primary: #2f7d57;
+  --primary-foreground: #ffffff;
+  --secondary: #ecf1ed;
+  --secondary-foreground: #10201a;
+  --muted: #ecf1ed;
+  --muted-foreground: #56665e;
+  --accent: #e4f3ea;
+  --accent-foreground: #10201a;
+  --destructive: #b3261e;
+  --border: #dde5df;
+  --input: #c9d3cc;
+  --ring: #2f7d57;
+  --chart-1: #10201a;
+  --chart-2: #56665e;
+  --chart-3: #2f7d57;
+  --chart-4: #8a9891;
+  --chart-5: #dde5df;
+  --radius: 0.75rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-mono;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  ::selection {
+    background: #cfe6d6;
+    color: #10201a;
+  }
+}
+
+/* The framed "sky" behind the landing hero: deeper green at the top, fading lighter toward the bottom. */
+.sky-panel {
+  background:
+    radial-gradient(90% 60% at 50% 0%, #c6e2cf 0%, transparent 70%),
+    radial-gradient(70% 45% at 50% 100%, #dcefe2 0%, transparent 75%),
+    linear-gradient(180deg, #ddeee3 0%, #eef6f0 55%, #f3f8f4 100%);
+}
