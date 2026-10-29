@@ -1,0 +1,120 @@
+{
+  "test_start": "2024-01-01",
+  "test_end": "2026-03-30",
+  "n_test_days": 34313,
+  "unhealthy_test_days": 782,
+  "models": [
+    {
+      "mae": 8.315833642504188,
+      "rmse": 21.742083311772618,
+      "category_accuracy": 0.8182030134351412,
+      "n": 34313,
+      "model": "LightGBM",
+      "about": "Gradient-boosted trees: each tree fixes the previous trees' mistakes.",
+      "mae_vs_persistence": 0.2489677106028284,
+      "mae_unhealthy_days": 61.32329712028438,
+      "seconds": 14.7,
+      "settings": {
+        "best_iteration": 2954
+      }
+    },
+    {
+      "mae": 8.779335784236498,
+      "rmse": 22.7511094541802,
+      "category_accuracy": 0.8082359455599918,
+      "n": 34313,
+      "model": "Neural network (MLP)",
+      "about": "Two hidden layers (64, 32) trained with early stopping.",
+      "mae_vs_persistence": 0.20710719611797124,
+      "mae_unhealthy_days": 55.42392160727641,
+      "seconds": 26.5,
+      "settings": {
+        "hidden_layer_sizes": [
+          64,
+          32
+        ]
+      }
+    },
+    {
+      "mae": 8.942635243450287,
+      "rmse": 22.868519253114936,
+      "category_accuracy": 0.807303354413779,
+      "n": 34313,
+      "model": "SVM (RBF kernel)",
+      "about": "Support vector regression with a curved (RBF) kernel. Trained on a 20,000-row sample (cost grows with rows squared).",
+      "mae_vs_persistence": 0.1923590455436507,
+      "mae_unhealthy_days": 67.43819595541633,
+      "seconds": 125.2,
+      "settings": {
+        "C": 50
+      }
+    },
+    {
+      "mae": 9.011422120427962,
+      "rmse": 21.97787859896172,
+      "category_accuracy": 0.8005712120770554,
+      "n": 34313,
+      "model": "Random forest",
+      "about": "Hundreds of decision trees, each on a random slice of the data, averaged.",
+      "mae_vs_persistence": 0.18614665988059786,
+      "mae_unhealthy_days": 60.1562728607907,
+      "seconds": 14.4,
+      "settings": {
+        "n_estimators": 200,
+        "min_samples_leaf": 5
+      }
+    },
+    {
+      "mae": 9.510625689106789,
+      "rmse": 22.562851001470875,
+      "category_accuracy": 0.7927607612275231,
+      "n": 34313,
+      "model": "k-nearest neighbors",
+      "about": "Finds the k most similar past days and averages what happened next.",
+      "mae_vs_persistence": 0.14106182350967744,
+      "mae_unhealthy_days": 65.92442458628604,
+      "seconds": 6.9,
+      "settings": {
+        "n_neighbors": 25
+      }
+    },
+    {
+      "mae": 9.648144856662004,
+      "rmse": 22.994825028452656,
+      "category_accuracy": 0.7915367353481187,
+      "n": 34313,
+      "model": "Ridge regression",
+      "about": "A straight-line (linear) combination of the features.",
+      "mae_vs_persistence": 0.12864198207404653,
+      "mae_unhealthy_days": 60.532966675977804,
+      "seconds": 0.5,
+      "settings": {
+        "alpha": 0.1
+      }
+    },
+    {
+      "mae": 11.072538105091365,
+      "rmse": 28.37003245653452,
+      "category_accuracy": 0.7725060472707137,
+      "n": 34313,
+      "model": "Persistence",
+      "about": "Tomorrow = today. The simplest possible forecast.",
+      "mae_vs_persistence": 0.0,
+      "mae_unhealthy_days": 57.35933503836317,
+      "seconds": 0.0,
+      "settings": {}
+    },
+    {
+      "mae": 12.1506103292761,
+      "rmse": 25.131586416154438,
+      "category_accuracy": 0.7250313292338181,
+      "n": 34313,
+      "model": "Seasonal average",
+      "about": "Average AQI for that county and month in the training years.",
+      "mae_vs_persistence": -0.09736450793418516,
+      "mae_unhealthy_days": 83.35276297685739,
+      "seconds": 0.0,
+      "settings": {}
+    }
+  ]
+}

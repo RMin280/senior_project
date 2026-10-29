@@ -77,10 +77,20 @@ def app(tmp_path_factory, raw):
         "results": {"LightGBM": {"mae": 8.0}},
         "mae_improvement_vs_best_baseline": 0.25, "overall_expected_error": 8.0}))
 
+    (d / "comparison.json").write_text(json.dumps({
+        "n_test_days": 10, "models": [{"model": "LightGBM", "mae": 8.0}]}))
+    dates = pd.date_range("2025-12-01", periods=10)
+    pd.DataFrame({"date": dates, "county_code": 113, "county_name": "Dallas",
+                  "actual": 40.0, "LightGBM": 42.0, "Persistence": 39.0}).to_parquet(
+        d / "comparison_predictions.parquet", index=False)
+
     from app import create_app
     return create_app({"DATA_DIR": d, "MODEL_PATH": d / "model.joblib",
                        "METRICS_PATH": d / "metrics.json",
-                       "ZIP_PATH": d / "zip_county.csv", "TESTING": True})
+                       "ZIP_PATH": d / "zip_county.csv",
+                       "COMPARISON_PATH": d / "comparison.json",
+                       "COMPARISON_PREDS_PATH": d / "comparison_predictions.parquet",
+                       "TESTING": True})
 
 
 @pytest.fixture()

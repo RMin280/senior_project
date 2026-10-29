@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Texas Air Check</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#find">Texas Air Check</a>
+    <nav>
+      <a href="#find">Find a place</a>
+      <a href="#compare">Compare</a>
+      <a href="#map">Texas map</a>
+      <a href="#lab">Model lab</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- 1. FIND A PLACE -->
+  <section id="find" class="hero">
+    <div class="wrap">
+      <h1>Is the air good where you want to live?</h1>
+      <p class="lede">Enter a Texas zip code to see five years of air quality, how it compares to the rest of the state, and tomorrow's forecast.</p>
+      <form class="search" id="find-form">
+        <input id="find-zip" inputmode="numeric" maxlength="5" placeholder="Texas zip code" aria-label="Texas zip code">
+        <button type="submit">Check the air</button>
+      </form>
+      <div class="chips" id="examples"></div>
+      <p class="error" id="find-error" hidden></p>
+    </div>
+  </section>
+
+  <section id="place" class="wrap" hidden>
+    <div class="place-head">
+      <div>
+        <p class="eyebrow" id="place-zip"></p>
+        <h2 id="place-name"></h2>
+        <p class="muted" id="place-note"></p>
+      </div>
+      <div class="grade-box">
+        <div class="grade" id="place-grade"></div>
+        <div>
+          <div class="score"><span id="place-score"></span><span class="muted"> / 100</span></div>
+          <div class="muted">Clean Air Score</div>
+          <div class="rank" id="place-rank"></div>
+        </div>
+      </div>
+    </div>
+    <div class="notes" id="place-warnings"></div>
+
+    <div class="tiles">
+      <div class="tile"><div class="tile-label">Days with good air</div><div class="tile-value" id="t-good"></div><div class="tile-sub" id="t-good-sub"></div></div>
+      <div class="tile"><div class="tile-label">Unhealthy days a year</div><div class="tile-value" id="t-unh"></div><div class="tile-sub">AQI over 100</div></div>
+      <div class="tile"><div class="tile-label">Typical AQI</div><div class="tile-value" id="t-med"></div><div class="tile-sub" id="t-med-sub"></div></div>
+      <div class="tile"><div class="tile-label">Long-term trend</div><div class="tile-value" id="t-trend"></div><div class="tile-sub" id="t-trend-sub"></div></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card forecast-card">
+        <h3>Tomorrow's forecast</h3>
+        <div id="fc-body"></div>
+      </div>
+      <div class="card">
+        <h3>What drives the AQI here</h3>
+        <div id="drivers"></div>
+        <p class="muted small" id="worst-months"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Daily AQI, last 12 months of data</h3>
+        <div class="legend" id="cat-legend"></div>
+      </div>
+      <div class="chart-box tall"><canvas id="chart-daily"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h3>Unhealthy days by year</h3>
+      <p class="muted small">Days with AQI over 100 (unhealthy for sensitive groups or worse).</p>
+      <div class="chart-box"><canvas id="chart-yearly"></canvas></div>
+    </div>
+  </section>
+
+  <!-- 2. COMPARE -->
+  <section id="compare" class="band">
+    <div class="wrap">
+      <h2>Compare two places</h2>
+      <p class="muted">Thinking about moving? Put your current zip next to the one you're considering.</p>
+      <form class="compare-form" id="compare-form">
+        <input id="cmp-a" inputmode="numeric" maxlength="5" placeholder="First zip" aria-label="First zip code" value="77002">
+        <span class="vs">vs</span>
+        <input id="cmp-b" inputmode="numeric" maxlength="5" placeholder="Second zip" aria-label="Second zip code" value="78701">
+        <button type="submit">Compare</button>
+      </form>
+      <p class="error" id="cmp-error" hidden></p>
+      <div id="cmp-result" hidden>
+        <div class="card"><table class="cmp-table" id="cmp-table"></table></div>
+        <div class="card">
+          <div class="card-head"><h3>Average AQI by year</h3><div class="legend" id="cmp-legend"></div></div>
+          <div class="chart-box"><canvas id="chart-cmp"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. MAP + RANKINGS -->
+  <section id="map" class="wrap">
+    <h2>Every Texas county with air monitors</h2>
+    <p class="muted">Color shows the Clean Air Score grade. Click a county to open it.</p>
+    <div class="grid-map">
+      <div class="card map-card"><div id="leaflet"></div><div class="legend map-legend" id="grade-legend"></div></div>
+      <div class="card rank-card">
+        <table class="rank-table">
+          <thead><tr><th>#</th><th>County</th><th class="num">Score</th><th>Grade</th><th class="num">Unhealthy days/yr</th></tr></thead>
+          <tbody id="rank-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <details class="method">
+      <summary>How the Clean Air Score works</summary>
+      <p>Each day from 2021 to 2025 earns points by its official EPA AQI category: Good = 100, Moderate = 60, Unhealthy for Sensitive Groups = 20, anything worse = 0. The score is the average day. Grades: A 93+, B 85+, C 77+, D 70+, F below 70. Counties whose monitors don't measure ozone or fine particles (the two pollutants behind most bad-air days in Texas) are listed as limited data and not ranked.</p>
+    </details>
+  </section>
+
+  <!-- 4. MODEL LAB -->
+  <section id="lab" class="band">
+    <div class="wrap">
+      <h2>Model lab: which approach forecasts best?</h2>
+      <p class="muted" id="lab-intro"></p>
+      <div class="card">
+        <h3>Average error on the test period (lower is better)</h3>
+        <div class="chart-box" id="mae-box"><canvas id="chart-mae"></canvas></div>
+      </div>
+      <div class="card scroll-x"><table class="lab-table" id="lab-table"></table></div>
+
+      <div class="card">
+        <div class="card-head wrap-gap">
+          <h3>Forecast vs. what actually happened</h3>
+          <div class="controls">
+            <label>County <select id="lab-county"></select></label>
+            <label>Window <select id="lab-window">
+              <option value="90">Last 90 days</option>
+              <option value="180">Last 180 days</option>
+              <option value="365">Last year</option>
+            </select></label>
+          </div>
+        </div>
+        <div class="model-picks" id="model-picks"></div>
+        <p class="muted small">Pick up to 3 models. The dark line is the real AQI.</p>
+        <div class="legend" id="lab-legend"></div>
+        <div class="chart-box tall"><canvas id="chart-lab"></canvas></div>
+        <p class="muted small" id="lab-mae"></p>
+      </div>
+      <div class="card"><h3>What each model is</h3><ul class="about" id="lab-about"></ul></div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap footer">
+  Data: U.S. EPA Air Quality System (daily AQI by county), Open-Meteo (weather), U.S. Census (zip codes).
+  <span id="data-through"></span>
+</footer>
+
+<div class="tooltip" id="tooltip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="demo.js"></script>
+</body>
+</html>

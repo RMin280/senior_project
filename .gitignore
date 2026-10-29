@@ -228,3 +228,6 @@ DEVLOG.md
 # Model: raw/processed data and trained model files are rebuilt by scripts
 model/data/
 model/artifacts/
+
+# Local Claude Code / editor settings
+.claude/

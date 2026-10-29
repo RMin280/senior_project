@@ -93,3 +93,25 @@ def test_response_time_under_500ms(client):
 def test_cors_allows_frontend(client):
     r = client.get("/api/health", headers={"Origin": "http://localhost:3000"})
     assert r.headers.get("Access-Control-Allow-Origin") == "http://localhost:3000"
+
+
+def test_summary_and_rankings(client):
+    s = client.get("/api/counties/113/summary").get_json()
+    assert s["county_name"] == "Dallas" and s["grade"] in "ABCDF"
+    assert client.get("/api/counties/999/summary").status_code == 404
+    r = client.get("/api/rankings").get_json()
+    assert {x["county_code"] for x in r} == {113, 201, 149}
+
+
+def test_model_comparison(client):
+    assert client.get("/api/models/comparison").get_json()["models"][0]["model"] == "LightGBM"
+    p = client.get("/api/models/predictions/113?start=2025-12-05").get_json()
+    assert p["models"] == ["LightGBM", "Persistence"]
+    assert len(p["dates"]) == 6 and p["actual"][0] == 40
+    assert client.get("/api/models/predictions/201").status_code == 404   # no rows
+
+
+def test_demo_page_served(client):
+    r = client.get("/demo/")
+    assert r.status_code == 200 and b"Texas Air Check" in r.data
+    assert client.get("/").status_code == 302

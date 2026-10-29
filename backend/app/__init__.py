@@ -9,21 +9,30 @@ Endpoints (all JSON, all GET):
   /api/forecast                          forecasts for all counties
   /api/zip/<zip>                         zip -> county, latest AQI, forecast
   /api/model                             model accuracy numbers
+  /api/counties/<code>/summary           long-term "is the air good here?" summary
+  /api/rankings                          every county by Clean Air Score
+  /api/models/comparison                 all model types compared on the test set
+  /api/models/predictions/<code>         each model's test predictions for a county
+  /demo/                                 presentation demo page
 """
 import re
 from pathlib import Path
 
 import pandas as pd
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, redirect, request, send_from_directory
 from flask_cors import CORS
 
 from .store import ROOT, DataStore
+
+DEMO_DIR = ROOT / "backend" / "demo"
 
 DEFAULTS = {
     "DATA_DIR": ROOT / "model" / "data",
     "MODEL_PATH": ROOT / "model" / "artifacts" / "model.joblib",
     "METRICS_PATH": ROOT / "model" / "reports" / "metrics.json",
     "ZIP_PATH": ROOT / "backend" / "data" / "zip_county.csv",
+    "COMPARISON_PATH": ROOT / "model" / "reports" / "model_comparison.json",
+    "COMPARISON_PREDS_PATH": ROOT / "model" / "artifacts" / "comparison_predictions.parquet",
     "CORS_ORIGINS": ["http://localhost:3000"],
 }
 
@@ -39,8 +48,22 @@ def create_app(overrides=None):
     CORS(app, origins=app.config["CORS_ORIGINS"])
 
     store = DataStore(Path(app.config["DATA_DIR"]), Path(app.config["MODEL_PATH"]),
-                      Path(app.config["METRICS_PATH"]), Path(app.config["ZIP_PATH"]))
+                      Path(app.config["METRICS_PATH"]), Path(app.config["ZIP_PATH"]),
+                      app.config.get("COMPARISON_PATH"),
+                      app.config.get("COMPARISON_PREDS_PATH"))
     app.extensions["store"] = store
+
+    @app.get("/")
+    def index():
+        return redirect("/demo/")
+
+    @app.get("/demo/")
+    def demo():
+        return send_from_directory(DEMO_DIR, "index.html")
+
+    @app.get("/demo/<path:name>")
+    def demo_file(name):
+        return send_from_directory(DEMO_DIR, name)
 
     def county_or_404(code):
         return store.has_county(code)
@@ -99,5 +122,32 @@ def create_app(overrides=None):
     @app.get("/api/model")
     def model_info():
         return jsonify(store.model_info())
+
+    @app.get("/api/counties/<int:code>/summary")
+    def county_summary(code):
+        s = store.summary(code) if county_or_404(code) else None
+        if s is None:
+            return error(404, f"no summary for county {code}")
+        return jsonify(s)
+
+    @app.get("/api/rankings")
+    def rankings():
+        return jsonify(store.rankings())
+
+    @app.get("/api/models/comparison")
+    def model_comparison():
+        c = store.model_comparison()
+        if c is None:
+            return error(404, "run model/src/compare_models.py first")
+        return jsonify(c)
+
+    @app.get("/api/models/predictions/<int:code>")
+    def model_predictions(code):
+        p = store.model_predictions(code, request.args.get("start"), request.args.get("end"))
+        if p is None:
+            return error(404, "run model/src/compare_models.py first")
+        if not p["dates"]:
+            return error(404, f"no test predictions for county {code}")
+        return jsonify(p)
 
     return app

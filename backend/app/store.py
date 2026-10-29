@@ -17,6 +17,8 @@ from config import aqi_category  # noqa: E402  (model/src)
 from features import build_features  # noqa: E402
 from predict import forecast, load_model  # noqa: E402
 
+from .livability import county_summaries  # noqa: E402
+
 ACTIVE_DAYS = 60  # counties with no data in the last N days get no forecast
 
 
@@ -29,7 +31,8 @@ def _haversine_km(lat1, lon1, lat2, lon2):
 
 class DataStore:
     def __init__(self, data_dir: Path, model_path: Path, metrics_path: Path,
-                 zip_path: Path):
+                 zip_path: Path, comparison_path: Path = None,
+                 comparison_preds_path: Path = None):
         self.aqi = pd.read_parquet(data_dir / "aqi_texas.parquet")
         weather = pd.read_parquet(data_dir / "weather.parquet")
         self.counties = pd.read_csv(data_dir / "counties.csv").set_index("county_code")
@@ -55,6 +58,16 @@ class DataStore:
         fc = forecast(bundle, rows)
         self.forecasts = {int(r.county_code): self._forecast_dict(r)
                           for r in fc.itertuples()}
+
+        self.summaries = county_summaries(self.aqi)
+
+        # Model comparison results are optional (made by model/src/compare_models.py)
+        self.comparison = None
+        if comparison_path and Path(comparison_path).exists():
+            self.comparison = json.loads(Path(comparison_path).read_text())
+        self.comparison_preds = None
+        if comparison_preds_path and Path(comparison_preds_path).exists():
+            self.comparison_preds = pd.read_parquet(comparison_preds_path)
 
     # ---------- helpers ----------
     @staticmethod
@@ -119,6 +132,44 @@ class DataStore:
                 "distance_km": round(distance, 1),
                 "county": self._county_dict(used),
                 "forecast": self.forecasts.get(used)}
+
+    def summary(self, code: int):
+        s = self.summaries.get(code)
+        if s is None:
+            return None
+        return {**s, "county_name": self.counties.loc[code, "county_name"]}
+
+    def rankings(self):
+        rows = []
+        for code, s in self.summaries.items():
+            c = self.counties.loc[code]
+            rows.append({"county_code": code, "county_name": c["county_name"],
+                         "lat": round(float(c["lat"]), 4), "lon": round(float(c["lon"]), 4),
+                         "score": s["score"], "grade": s["grade"], "rank": s["rank"],
+                         "median_aqi": s["median_aqi"], "pct_good": s["pct_good"],
+                         "unhealthy_days_per_year": s["unhealthy_days_per_year"],
+                         "trend": s["trend"]["direction"] if s["trend"] else None,
+                         "reliable": s["reliable"]})
+        # Reliable counties by rank first, then the limited-data ones
+        return sorted(rows, key=lambda r: (r["rank"] is None, r["rank"] or 0))
+
+    def model_comparison(self):
+        return self.comparison
+
+    def model_predictions(self, code: int, start=None, end=None):
+        if self.comparison_preds is None:
+            return None
+        p = self.comparison_preds[self.comparison_preds["county_code"] == code]
+        if start:
+            p = p[p["date"] >= pd.Timestamp(start)]
+        if end:
+            p = p[p["date"] <= pd.Timestamp(end)]
+        models = [c for c in p.columns
+                  if c not in ("date", "county_code", "county_name", "actual")]
+        return {"county_code": code, "models": models,
+                "dates": [d.strftime("%Y-%m-%d") for d in p["date"]],
+                "actual": p["actual"].round().astype(int).tolist(),
+                "predictions": {m: p[m].round(1).tolist() for m in models}}
 
     def model_info(self):
         m = self.metrics
