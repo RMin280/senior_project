@@ -221,3 +221,10 @@ __marimo__/
 # OS files
 Thumbs.db
 .DS_Store
+
+# Personal devlog (not pushed)
+DEVLOG.md
+
+# Model: raw/processed data and trained model files are rebuilt by scripts
+model/data/
+model/artifacts/
