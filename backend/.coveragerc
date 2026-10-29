@@ -1,0 +1,3 @@
+[run]
+# download_data.py only talks to outside websites (EPA, Open-Meteo); not unit tested
+omit = */download_data.py

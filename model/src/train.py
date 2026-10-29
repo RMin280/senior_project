@@ -52,6 +52,9 @@ def main():
     seasonal = (train.groupby(["county_code", "month"], observed=True)["target"]
                 .mean().rename("seasonal"))
     test = test.join(seasonal, on=["county_code", "month"])
+    # Month never seen in training for that county -> fall back to the county's average
+    county_mean = train.groupby("county_code", observed=True)["target"].mean()
+    test["seasonal"] = test["seasonal"].fillna(test["county_code"].map(county_mean))
     fair = test["aqi_today"].notna() & test["seasonal"].notna()
     t = test[fair]
     y = t["target"].to_numpy()

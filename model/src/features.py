@@ -55,10 +55,10 @@ def build_features(aqi: pd.DataFrame, weather: pd.DataFrame) -> pd.DataFrame:
 
     # Calendar for tomorrow (the day being predicted)
     tomorrow = df["date"] + pd.Timedelta(days=1)
-    doy = tomorrow.dt.dayofyear
+    doy = tomorrow.dt.day_of_year
     df["doy_sin"] = np.sin(2 * np.pi * doy / 365.25)
     df["doy_cos"] = np.cos(2 * np.pi * doy / 365.25)
-    df["dow"] = tomorrow.dt.dayofweek
+    df["dow"] = tomorrow.dt.day_of_week
     df["month"] = tomorrow.dt.month
 
     # Weather today and tomorrow. Wind direction becomes x/y so 359 and 1 are close.

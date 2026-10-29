@@ -1,0 +1,5 @@
+-r ../model/requirements.txt
+flask
+flask-cors
+pytest
+pytest-cov

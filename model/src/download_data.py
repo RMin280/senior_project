@@ -55,6 +55,20 @@ def download_aqi() -> pd.DataFrame:
     return aqi.drop_duplicates(["county_code", "date"])
 
 
+def trim_incomplete_days(aqi: pd.DataFrame) -> pd.DataFrame:
+    """The current-year EPA file trails off: the last weeks have only a few
+    counties (sometimes just one CO sensor). Cut everything after the last day
+    where at least half the usual number of counties reported."""
+    per_day = aqi.groupby("date")["county_code"].nunique()
+    usual = per_day.iloc[-120:].median()
+    complete = per_day[per_day >= usual / 2]
+    last_good = complete.index.max()
+    dropped = (aqi["date"] > last_good).sum()
+    if dropped:
+        print(f"  trimming {dropped} rows after {last_good.date()} (incomplete days)")
+    return aqi[aqi["date"] <= last_good]
+
+
 def county_centers(aqi: pd.DataFrame) -> pd.DataFrame:
     """Center of each county = average location of its EPA monitors."""
     sites = fetch_zip_csv(EPA_SITES_URL, "aqs_sites.zip")
@@ -109,7 +123,7 @@ def main():
         d.mkdir(parents=True, exist_ok=True)
 
     print("EPA daily AQI by county")
-    aqi = download_aqi()
+    aqi = trim_incomplete_days(download_aqi())
     aqi.to_parquet(DATA_DIR / "aqi_texas.parquet", index=False)
     print(f"  total: {len(aqi)} rows, {aqi.county_code.nunique()} counties, "
           f"{aqi.date.min().date()} to {aqi.date.max().date()}")

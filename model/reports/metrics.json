@@ -3,37 +3,37 @@
     "train_end": "2022-12-31",
     "val_end": "2023-12-31",
     "test_start": "2024-01-01",
-    "test_end": "2026-04-29"
+    "test_end": "2026-03-30"
   },
   "results": {
     "persistence (tomorrow = today)": {
-      "mae": 11.077386671325007,
-      "rmse": 28.370849235172024,
-      "category_accuracy": 0.7725565551576556,
-      "n": 34347
+      "mae": 11.072538105091365,
+      "rmse": 28.37003245653452,
+      "category_accuracy": 0.7725060472707137,
+      "n": 34313
     },
     "seasonal average (county x month)": {
-      "mae": 12.1577920471028,
-      "rmse": 25.13346913758639,
-      "category_accuracy": 0.7251288322124203,
-      "n": 34347
+      "mae": 12.1506103292761,
+      "rmse": 25.131586416154438,
+      "category_accuracy": 0.7250313292338181,
+      "n": 34313
     },
     "7-day average": {
-      "mae": 11.923964316561923,
-      "rmse": 24.648304742248794,
-      "category_accuracy": 0.7345037412292195,
-      "n": 34347
+      "mae": 11.919312061373379,
+      "rmse": 24.643041489610354,
+      "category_accuracy": 0.734328097222627,
+      "n": 34313
     },
     "LightGBM": {
-      "mae": 8.32395864368904,
-      "rmse": 21.74846362831718,
-      "category_accuracy": 0.8182082860220689,
-      "n": 34347
+      "mae": 8.31584241971753,
+      "rmse": 21.742084061261814,
+      "category_accuracy": 0.8182030134351412,
+      "n": 34313
     }
   },
   "best_baseline": "persistence (tomorrow = today)",
-  "mae_improvement_vs_best_baseline": 0.2485629606812868,
-  "mae_improvement_vs_seasonal_average": 0.31533961006738576,
+  "mae_improvement_vs_best_baseline": 0.24896691790170977,
+  "mae_improvement_vs_seasonal_average": 0.3156029043511459,
   "targets": {
     "mae_improvement": 0.15,
     "category_accuracy": 0.7
@@ -41,7 +41,7 @@
   "expected_error_by_county": {
     "13": 9.2,
     "27": 7.4,
-    "29": 10.1,
+    "29": 10.0,
     "37": 7.7,
     "39": 8.2,
     "41": 8.5,
@@ -66,7 +66,7 @@
     "257": 7.7,
     "273": 8.9,
     "303": 8.6,
-    "309": 8.1,
+    "309": 8.0,
     "323": 8.4,
     "339": 9.0,
     "349": 7.8,
@@ -78,10 +78,10 @@
     "381": 5.4,
     "397": 4.8,
     "423": 5.7,
-    "439": 10.9,
-    "453": 8.4,
+    "439": 10.8,
+    "453": 8.3,
     "469": 5.0,
-    "479": 8.5,
+    "479": 8.4,
     "493": 3.6
   },
   "overall_expected_error": 8.3
