@@ -13,8 +13,11 @@ export default async function ZipCodePage({
     <div className="flex min-h-screen flex-col bg-linear-to-b from-sky to-background bg-size-[100%_40rem] bg-no-repeat">
       <Navbar />
 
-      <main className="mx-auto flex w-full max-w-4xl flex-col gap-16 px-4 pb-24">
-        <section aria-label="Air quality now" className="pt-8">
+      <main className="flex flex-col pb-24">
+        <section
+          aria-label="Air quality now"
+          className="mx-auto w-full max-w-4xl px-4 pt-8"
+        >
           <AqiCard
             place={`Dallas, TX ${zip}`}
             aqi={42}

@@ -25,6 +25,7 @@ export function ForecastSection() {
   return (
     <Section
       id="forecast"
+      band
       title="The next three days"
       description="Here's what to expect."
     >
