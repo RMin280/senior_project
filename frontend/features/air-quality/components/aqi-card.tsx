@@ -12,7 +12,7 @@ import { AqiChip } from "./aqi-chip"
 import { AqiScale } from "./aqi-scale"
 import { getCategory } from "@/lib/aqi"
 
-type ReadingCardProps = {
+type AqiCardProps = {
   place: string
   aqi: number
   description: string
@@ -21,15 +21,15 @@ type ReadingCardProps = {
   changeHref: string
 }
 
-/* Hero Card */
-export function ReadingCard({
+/** The large card showing a place's current AQI, category and scale. */
+export function AqiCard({
   place,
   aqi,
   description,
   advice,
   measured,
   changeHref,
-}: ReadingCardProps) {
+}: AqiCardProps) {
   const category = getCategory(aqi)
 
   return (
