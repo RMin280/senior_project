@@ -5,8 +5,8 @@ import { TimelineChart } from "./timeline-chart"
 // Sample data now, replace with API
 const forecast = [
   { day: "Tomorrow", date: "Fri, Oct 16", aqi: 48, error: 6 },
-  { day: "Saturday", date: "Oct 17", aqi: 57, error: 9 },
-  { day: "Sunday", date: "Oct 18", aqi: 63, error: 13 },
+  { day: "Saturday", date: "Sat, Oct 17", aqi: 57, error: 9 },
+  { day: "Sunday", date: "Sun, Oct 18", aqi: 63, error: 13 },
 ]
 
 // 90 days of sample history ending today (Oct 15), which matches the AQI card's 42.

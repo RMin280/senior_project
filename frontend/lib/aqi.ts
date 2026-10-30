@@ -9,28 +9,20 @@ export type AQICategory = {
   name: string
   lo: number
   hi: number
-  color: string
 }
 
 export const categories: AQICategory[] = [
-  { key: "good", name: "Good", lo: 0, hi: 50, color: "#00e400" },
-  { key: "moderate", name: "Moderate", lo: 51, hi: 100, color: "#ffff00" },
+  { key: "good", name: "Good", lo: 0, hi: 50 },
+  { key: "moderate", name: "Moderate", lo: 51, hi: 100 },
   {
     key: "sensitive",
     name: "Unhealthy for Sensitive Groups",
     lo: 101,
     hi: 150,
-    color: "#ff7e00",
   },
-  { key: "unhealthy", name: "Unhealthy", lo: 151, hi: 200, color: "#ff0000" },
-  {
-    key: "very-unhealthy",
-    name: "Very Unhealthy",
-    lo: 201,
-    hi: 300,
-    color: "#8f00ff",
-  },
-  { key: "hazardous", name: "Hazardous", lo: 301, hi: 500, color: "#7e0023" },
+  { key: "unhealthy", name: "Unhealthy", lo: 151, hi: 200 },
+  { key: "very-unhealthy", name: "Very Unhealthy", lo: 201, hi: 300 },
+  { key: "hazardous", name: "Hazardous", lo: 301, hi: 500 },
 ]
 
 type ColorShade = "fill" | "tint" | "ink"

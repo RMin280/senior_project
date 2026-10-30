@@ -43,6 +43,15 @@ export function TimelineChart({ history }: TimelineChartProps) {
   const [range, setRange] = useState<Range>("1W") //1 week by default
   const [active, setActive] = useState<number | null>(null) //index of day being hovered on
 
+  // error handling
+  if (history.length === 0) {
+    return (
+      <p className="mt-10 text-muted-foreground">
+        No history for this area yet.
+      </p>
+    )
+  }
+
   // Visible Days (the last one is today)
   const days = history.slice(-ranges[range])
   const todayIndex = days.length - 1
