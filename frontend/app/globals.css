@@ -11,6 +11,7 @@
   --font-display: var(--font-geist);
 
   --color-background: var(--background);
+  --color-sky: var(--sky);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -67,6 +68,7 @@
 
 :root {
   --background: #f7f9f6;
+  --sky: #e8f2eb;
   --foreground: #10201a;
   --card: #ffffff;
   --card-foreground: #10201a;

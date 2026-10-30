@@ -10,7 +10,7 @@ export default async function ZipCodePage({
   const { zip } = await params
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-linear-to-b from-sky to-background bg-size-[100%_40rem] bg-no-repeat">
       <Navbar />
 
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-16 px-4 pb-24">
