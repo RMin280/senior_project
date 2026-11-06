@@ -15,7 +15,6 @@ import { getCategory } from "@/lib/aqi"
 type AqiCardProps = {
   place: string
   aqi: number
-  description: string
   advice?: string
   measured: string
   changeHref: string
@@ -25,7 +24,6 @@ type AqiCardProps = {
 export function AqiCard({
   place,
   aqi,
-  description,
   advice,
   measured,
   changeHref,
@@ -51,12 +49,14 @@ export function AqiCard({
 
       <CardContent className="flex flex-col items-start gap-3">
         <h1 className="sr-only">
-          Air quality now: {aqi}, {category.name}
+          Latest air quality: {aqi}, {category.name}
         </h1>
         <AqiNumber aqi={aqi} />
 
         <AqiChip aqi={aqi} />
-        <p className="font-display text-xl leading-snug">{description}</p>
+        <p className="font-display text-xl leading-snug">
+          {category.description}
+        </p>
         {advice && <p className="text-foreground/80">{advice}</p>}
 
         <div className="mt-4 w-full">

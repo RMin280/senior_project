@@ -18,6 +18,14 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Connecting to the API
+
+The dashboard reads live data from the Flask API, so start that first (see [backend/README.md](../backend/README.md)). Without it, ZIP pages show an error screen.
+
+The frontend looks for the API at `http://localhost:5000`. To use a different address, copy `.env.example` to `.env.local` and change `API_URL`.
+
+All API calls live in `lib/api.ts`. They run on the server, so `API_URL` never reaches the browser.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
