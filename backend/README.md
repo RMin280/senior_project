@@ -31,6 +31,8 @@ County codes are EPA's 3-digit Texas county codes: Dallas = 113, Harris = 201, T
 | `/api/counties/<code>/history?start=YYYY-MM-DD&end=YYYY-MM-DD` | `{points: [{date, aqi, category, driver}]}`. Defaults to the last 365 days. `driver` is the pollutant behind that day's AQI. |
 | `/api/counties/<code>/forecast` | `{forecast_date, predicted_aqi, category, expected_error}`. Returns 404 if the county stopped reporting. |
 | `/api/forecast` | Forecasts for all counties |
+| `/api/counties/<code>/pollutants?days=30` | Daily AQI per pollutant (`Ozone`, `PM2.5`, `PM10`) from AirNow, plus the latest value of each |
+| `/api/map` | Every monitor's latest AQI (`site, lat, lon, aqi, pollutant`) for the map heatmap |
 | `/api/model` | Model accuracy numbers for the "how accurate is this" display |
 
 Example: `GET /api/zip/75201` returns
@@ -55,4 +57,4 @@ Example: `GET /api/zip/75201` returns
 ## Not done yet
 
 - **Database:** reads the model's parquet files instead of PostgreSQL (Arjun's schema).
-- **Live data:** EPA files lag by months, so "latest" is currently end of March 2026. Live forecasts need AirNow plus the Open-Meteo forecast API, and a daily refresh job.
+- **Daily refresh:** live data needs `model/src/update_data.py` + `train.py` each day, then a backend restart. A scheduled job would automate this.

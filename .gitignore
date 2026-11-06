@@ -231,3 +231,6 @@ model/artifacts/
 
 # Local Claude Code / editor settings
 .claude/
+
+# Weekly reports (submitted separately)
+weekly_report_*.docx

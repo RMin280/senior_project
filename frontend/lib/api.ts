@@ -24,6 +24,9 @@ export type Forecast = {
 
 export type ZipResult = {
   zip: string
+  /* center of the zip code */
+  zip_lat: number
+  zip_lon: number
   home_county_code: number
   home_county_name: string
 
@@ -60,4 +63,46 @@ export async function getHistory(countyCode: number): Promise<HistoryPoint[]> {
   if (!response.ok) throw new Error(`API returned ${response.status}`)
   const { points } = await response.json()
   return points
+}
+
+export type PollutantPoint = { date: string; aqi: number }
+
+export type PollutantHistory = {
+  county_code: number
+  /* keyed by pollutant: "Ozone", "PM2.5", "PM10" */
+  pollutants: Record<string, PollutantPoint[]>
+  latest: Record<string, PollutantPoint>
+}
+
+/* daily AQI per pollutant (AirNow, 2021 on) for the last `days` days */
+export async function getPollutants(
+  countyCode: number,
+  days = 1826,
+): Promise<PollutantHistory | null> {
+  const response = await fetch(
+    `${API_URL}/api/counties/${countyCode}/pollutants?days=${days}`,
+  )
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`API returned ${response.status}`)
+  return response.json()
+}
+
+export type MonitorReading = {
+  site: string
+  lat: number
+  lon: number
+  aqi: number
+  pollutant: string
+  county_code: number
+}
+
+/* every monitor's AQI on the newest day, for the map */
+export async function getMapPoints(): Promise<{
+  date: string
+  sites: MonitorReading[]
+} | null> {
+  const response = await fetch(`${API_URL}/api/map`)
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`API returned ${response.status}`)
+  return response.json()
 }
