@@ -168,3 +168,9 @@ section.wrap, .band { padding-top: 48px; padding-bottom: 48px; }
   .tile-value { font-size: 24px; }
   .hero { padding: 48px 0 40px; }
 }
+
+/* OpenStreetMap tiles are light only; darken them in dark mode */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9); }
+}
+:root[data-theme="dark"] .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9); }

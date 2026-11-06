@@ -70,7 +70,7 @@ def county_summaries(aqi: pd.DataFrame) -> dict:
             "county_code": int(code),
             "years": [first, last_full],
             "score": round(score, 1),
-            "grade": grade(score),
+            "grade": grade(round(score)),  # grade what people see
             "median_aqi": float(a.median()),
             "pct_good": round(float((a <= 50).mean()), 3),
             "pct_moderate": round(float(((a > 50) & (a <= 100)).mean()), 3),
