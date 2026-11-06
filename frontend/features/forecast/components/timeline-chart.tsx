@@ -19,12 +19,11 @@ import {
 } from "@/components/ui/chart"
 import { Slider } from "@/components/ui/slider"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-
-// Same shape as the points from the backend's /history endpoint
-type MeasuredDay = { date: string; aqi: number }
+import type { HistoryPoint } from "@/lib/api"
+import { formatApiDate } from "@/lib/utils"
 
 type TimelineChartProps = {
-  history: MeasuredDay[]
+  history: HistoryPoint[]
 }
 
 // Time Ranges (Days shown on the chart)
@@ -36,6 +35,19 @@ type Range = keyof typeof ranges
 const chartConfig = {
   aqi: { label: "AQI", color: "var(--foreground)" },
 } satisfies ChartConfig
+
+/* formats date as shorter form like "Nov 6" */
+function shortDate(date: string) {
+  return formatApiDate(date, { month: "short", day: "numeric" })
+}
+
+/* Readings from the last N calendar days. Some counties skip days, so counting readings would reach too far back. */
+function lastDays(history: HistoryPoint[], count: number) {
+  const cutoff = new Date(history[history.length - 1].date)
+  cutoff.setUTCDate(cutoff.getUTCDate() - count + 1)
+  const firstDate = cutoff.toISOString().slice(0, 10)
+  return history.filter((day) => day.date >= firstDate)
+}
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -52,12 +64,12 @@ export function TimelineChart({ history }: TimelineChartProps) {
     )
   }
 
-  // Visible Days (the last one is today)
-  const days = history.slice(-ranges[range])
-  const todayIndex = days.length - 1
+  // Visible Days (the last one is the latest reading)
+  const days = lastDays(history, ranges[range])
+  const latestIndex = days.length - 1
 
   // Active Day
-  const index = active ?? todayIndex
+  const index = active ?? latestIndex
   const point = days[index]
 
   return (
@@ -69,7 +81,7 @@ export function TimelineChart({ history }: TimelineChartProps) {
             {point.aqi}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {index === todayIndex ? "Today" : point.date}
+            {formatApiDate(point.date)}
           </p>
         </div>
 
@@ -114,10 +126,8 @@ export function TimelineChart({ history }: TimelineChartProps) {
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="date"
-            ticks={[days[0].date, days[todayIndex].date]}
-            tickFormatter={(date) =>
-              date === days[todayIndex].date ? "Today" : date
-            }
+            ticks={[days[0].date, days[latestIndex].date]}
+            tickFormatter={shortDate}
             tickLine={false}
             axisLine={false}
             tickMargin={10}
@@ -166,9 +176,11 @@ export function TimelineChart({ history }: TimelineChartProps) {
       {/* Trend Line Slider */}
       <Slider
         getAriaLabel={() => "Move through days"}
-        getAriaValueText={(_, i) => `${days[i].date}: AQI ${days[i].aqi}`}
+        getAriaValueText={(_, i) =>
+          `${formatApiDate(days[i].date)}: AQI ${days[i].aqi}`
+        }
         min={0}
-        max={todayIndex}
+        max={latestIndex}
         value={[index]}
         onValueChange={(value) =>
           setActive(Array.isArray(value) ? value[0] : value)

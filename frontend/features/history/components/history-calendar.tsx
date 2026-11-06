@@ -3,24 +3,46 @@
 import { useState } from "react"
 import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react"
 import { Button } from "@/components/ui/button"
+import type { Forecast } from "@/lib/api"
 import { aqiColor } from "@/lib/aqi"
-import { DayCell } from "./day-cell"
-import {
-  EARLIEST_DAY,
-  LAST_FORECAST_DAY,
-  TODAY,
-  getSampleReading,
-} from "./sample-history"
+import { DayCell, type DayReading } from "./day-cell"
 
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-// Months are stored as num, so going back/forward +1/-1
-function toMonthNumber(date: Date) {
-  return date.getFullYear() * 12 + date.getMonth()
+type HistoryCalendarProps = {
+  /* aqi by date, oldest first */
+  aqiByDate: Record<string, number>
+  forecast: Forecast | null
 }
 
-export function HistoryCalendar() {
-  const [monthNumber, setMonthNumber] = useState(toMonthNumber(TODAY))
+// Months are stored as num, so going back/forward +1/-1
+function toMonthNumber(date: string) {
+  const [year, month] = date.split("-").map(Number)
+  return year * 12 + month - 1
+}
+
+// "2026-03-05", the same format the API uses
+function toApiDate(year: number, month: number, day: number) {
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${year}-${pad(month + 1)}-${pad(day)}`
+}
+
+export function HistoryCalendar({ aqiByDate, forecast }: HistoryCalendarProps) {
+  const dates = Object.keys(aqiByDate)
+  const firstDate = dates[0]
+  const latestDate = dates[dates.length - 1]
+  const lastDate = forecast?.forecast_date ?? latestDate
+
+  // opens on the latest reading's month
+  const [monthNumber, setMonthNumber] = useState(toMonthNumber(latestDate))
+
+  function getReading(date: string): DayReading | undefined {
+    if (date === forecast?.forecast_date) {
+      return { aqi: forecast.predicted_aqi, kind: "forecast" }
+    }
+    const aqi = aqiByDate[date]
+    return aqi === undefined ? undefined : { aqi, kind: "measured" }
+  }
 
   // Shown Month
   const year = Math.floor(monthNumber / 12)
@@ -34,8 +56,8 @@ export function HistoryCalendar() {
 
   // Arrows //
   // no previous month before data starts, no next month after the last forecast day
-  const hasPrevious = monthNumber > toMonthNumber(EARLIEST_DAY)
-  const hasNext = monthNumber < toMonthNumber(LAST_FORECAST_DAY)
+  const hasPrevious = monthNumber > toMonthNumber(firstDate)
+  const hasNext = monthNumber < toMonthNumber(lastDate)
 
   return (
     <div className="mt-6 flex flex-col gap-3">
@@ -94,7 +116,7 @@ export function HistoryCalendar() {
           <DayCell
             key={i}
             day={i + 1}
-            reading={getSampleReading(new Date(year, month, i + 1))}
+            reading={getReading(toApiDate(year, month, i + 1))}
           />
         ))}
       </div>

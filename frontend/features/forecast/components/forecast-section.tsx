@@ -1,40 +1,38 @@
 import { Section } from "@/components/layout/section"
+import type { Forecast, HistoryPoint } from "@/lib/api"
+import { formatApiDate } from "@/lib/utils"
 import { ForecastDay } from "./forecast-day"
 import { TimelineChart } from "./timeline-chart"
 
-// Sample data now, replace with API
-const forecast = [
-  { day: "Tomorrow", date: "Fri, Oct 16", aqi: 48, error: 6 },
-  { day: "Saturday", date: "Sat, Oct 17", aqi: 57, error: 9 },
-  { day: "Sunday", date: "Sun, Oct 18", aqi: 63, error: 13 },
-]
+type ForecastSectionProps = {
+  forecast: Forecast | null
+  history: HistoryPoint[]
+}
 
-// 90 days of sample history ending today (Oct 15), which matches the AQI card's 42.
-const history = Array.from({ length: 90 }, (_, i) => {
-  const date = new Date(2026, 9, 15 - 89 + i)
-  return {
-    date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-    aqi:
-      i === 89
-        ? 42
-        : Math.round(45 + 12 * Math.sin(i / 5) + 8 * Math.sin(i * 1.7)),
-  }
-})
-
-export function ForecastSection() {
+export function ForecastSection({ forecast, history }: ForecastSectionProps) {
   return (
     <Section
       id="forecast"
       band
-      title="The next three days"
-      description="Here's what to expect."
+      title="Next-day forecast"
+      description="What our model expects the day after the latest reading."
     >
-      <div className="mt-6 grid gap-x-10 gap-y-2 sm:grid-cols-3">
-        {forecast.map((day) => (
-          <ForecastDay key={day.day} {...day} />
-        ))}
-      </div>
-      <TimelineChart history={history} />
+      {forecast ? (
+        <div className="mt-6 max-w-sm">
+          <ForecastDay
+            day={formatApiDate(forecast.forecast_date, { weekday: "long" })}
+            date={formatApiDate(forecast.forecast_date)}
+            aqi={forecast.predicted_aqi}
+            error={Math.round(forecast.expected_error)}
+          />
+        </div>
+      ) : (
+        <p className="mt-6 text-muted-foreground">
+          No forecast for this area right now.
+        </p>
+      )}
+      {/* The chart shows 90 days at most, so don't send it all of history */}
+      <TimelineChart history={history.slice(-90)} />
     </Section>
   )
 }

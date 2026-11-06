@@ -1,6 +1,6 @@
 import { aqiColor, getCategory } from "@/lib/aqi"
 
-/** The AQI category in words, in its EPA colors. The color never appears without the word. */
+/* AQI category chip with color and name */
 export function AqiChip({ aqi }: { aqi: number }) {
   const category = getCategory(aqi)
 

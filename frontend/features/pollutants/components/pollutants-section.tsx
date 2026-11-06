@@ -1,11 +1,10 @@
 import { Section } from "@/components/layout/section"
 import { PollutantCard } from "./pollutant-card"
 
-// Sample data for now, but this will eventually be fetched from the API.
+// show placeholder till api has pollutant values
 const pollutants = [
-  { name: "PM2.5", value: 7.6, unit: "µg/m³" },
-  { name: "Ozone", value: 38, unit: "ppb" },
-  { name: "NO₂", value: 14, unit: "ppb" },
+  { name: "PM2.5", unit: "µg/m³" },
+  { name: "Ozone", unit: "ppb" },
 ]
 
 export function PollutantsSection() {
@@ -15,7 +14,7 @@ export function PollutantsSection() {
       title="In the air"
       description="Measurements of pollutants in the air."
     >
-      <div className="mt-6 grid gap-x-10 gap-y-2 sm:grid-cols-3">
+      <div className="mt-6 grid gap-x-10 gap-y-2 sm:grid-cols-2">
         {pollutants.map((pollutant) => (
           <PollutantCard key={pollutant.name} {...pollutant} />
         ))}
