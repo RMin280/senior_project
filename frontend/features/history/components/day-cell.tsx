@@ -1,5 +1,6 @@
 import { aqiColor, getCategory } from "@/lib/aqi"
-import type { DayReading } from "./sample-history"
+
+export type DayReading = { aqi: number; kind: "measured" | "forecast" }
 
 type DayCellProps = {
   day: number
@@ -7,7 +8,7 @@ type DayCellProps = {
 }
 
 export function DayCell({ day, reading }: DayCellProps) {
-  //if no data for the day, return a blank cell
+ // return blank cell on empty day
   if (!reading) {
     return (
       <div className="h-18 rounded-lg border p-2 text-sm text-muted-foreground">

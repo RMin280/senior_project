@@ -50,7 +50,7 @@ export default async function ZipCodePage({
 
         <ForecastSection history={history} />
 
-        <HistorySection />
+        <HistorySection history={history} forecast={result.forecast} />
       </main>
     </div>
   )

@@ -23,7 +23,8 @@ export function ForecastSection({ history }: { history: HistoryPoint[] }) {
           <ForecastDay key={day.day} {...day} />
         ))}
       </div>
-      <TimelineChart history={history} />
+      {/* The chart shows 90 days at most, so don't send it all of history */}
+      <TimelineChart history={history.slice(-90)} />
     </Section>
   )
 }

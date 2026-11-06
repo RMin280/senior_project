@@ -51,9 +51,11 @@ export type HistoryPoint = {
   driver: string
 }
 
-/* last year of readings */
+/* load all readings for ocunties up front */
 export async function getHistory(countyCode: number): Promise<HistoryPoint[]> {
-  const response = await fetch(`${API_URL}/api/counties/${countyCode}/history`)
+  const response = await fetch(
+    `${API_URL}/api/counties/${countyCode}/history?start=2015-01-01`,
+  )
 
   if (!response.ok) throw new Error(`API returned ${response.status}`)
   const { points } = await response.json()
