@@ -1,0 +1,62 @@
+{
+  "test": [
+    "2024-01-01",
+    "2026-11-04"
+  ],
+  "n_test": 44075,
+  "results": {
+    "Persistence (tomorrow = today)": {
+      "accuracy": 0.7711448438849248,
+      "balanced_accuracy": 0.3774527558334017,
+      "macro_f1": 0.3774551268730004,
+      "f1_unhealthy": 0.35496558505408066,
+      "mae": 11.003232892484359
+    },
+    "A. Current model": {
+      "accuracy": 0.8183777651730005,
+      "balanced_accuracy": 0.28455053318334095,
+      "macro_f1": 0.29471285879954096,
+      "f1_unhealthy": 0.19316239316239317,
+      "mae": 8.321029214131224
+    },
+    "B. + pollutant levels, nearby counties": {
+      "accuracy": 0.8182643221781055,
+      "balanced_accuracy": 0.28984243878343596,
+      "macro_f1": 0.3013746061343666,
+      "f1_unhealthy": 0.228287841191067,
+      "mae": 8.272736573478408
+    },
+    "C. Classifier on categories": {
+      "accuracy": 0.8141803743618832,
+      "balanced_accuracy": 0.33823825963187376,
+      "macro_f1": 0.3320737269739762,
+      "f1_unhealthy": 0.2465753424657534
+    },
+    "D. Classifier + class weights": {
+      "accuracy": 0.7911060692002269,
+      "balanced_accuracy": 0.3552432962098199,
+      "macro_f1": 0.3495672691439348,
+      "f1_unhealthy": 0.3827227993439038
+    },
+    "E. B with a random split (leaky)": {
+      "accuracy": 0.8388280424751209,
+      "balanced_accuracy": 0.292507912005503,
+      "macro_f1": 0.3088345127320226,
+      "f1_unhealthy": 0.2865248226950355,
+      "mae": 7.016960266282692
+    }
+  },
+  "majority_class_accuracy": 0.6462393647192286,
+  "top_features_B": [
+    "aqi_today",
+    "county_code",
+    "aqi_mean30",
+    "wx_tmrw_temperature_2m_max",
+    "aqi_mean7",
+    "wx_tmrw_wind_dir_cos",
+    "wx_tmrw_wind_speed_10m_max",
+    "wx_tmrw_relative_humidity_2m_mean",
+    "texas_mean_aqi",
+    "doy_sin"
+  ]
+}

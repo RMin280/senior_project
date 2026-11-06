@@ -11,7 +11,7 @@ export function ZipSearch() {
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
     const zip = new FormData(event.currentTarget).get("zip")
-    router.push(`/zipcodes/${zip}`)
+    router.push(`/map/${zip}`)
   }
 
   return (

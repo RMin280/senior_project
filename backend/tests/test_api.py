@@ -115,3 +115,26 @@ def test_demo_page_served(client):
     r = client.get("/demo/")
     assert r.status_code == 200 and b"Texas Air Check" in r.data
     assert client.get("/").status_code == 302
+
+
+def test_zip_has_its_own_location(client):
+    data = client.get("/api/zip/75201").get_json()
+    assert data["zip_lat"] == 32.79 and data["zip_lon"] == -96.8
+
+
+def test_pollutants(client):
+    p = client.get("/api/counties/113/pollutants?days=3").get_json()
+    assert set(p["pollutants"]) == {"Ozone", "PM2.5"}
+    assert [x["aqi"] for x in p["pollutants"]["Ozone"]] == [40, 45, 50]
+    assert [x["aqi"] for x in p["pollutants"]["PM2.5"]] == [30, 55]   # missing day skipped
+    assert p["latest"]["PM2.5"] == {"date": "2025-12-31", "aqi": 55}
+    assert client.get("/api/counties/201/pollutants").get_json()["pollutants"] == {}
+    assert client.get("/api/counties/113/pollutants?days=abc").status_code == 400
+
+
+def test_map_points_worst_pollutant_per_site(client):
+    m = client.get("/api/map").get_json()
+    assert m["date"] == "2025-12-31"
+    by_site = {s["site"]: s for s in m["sites"]}
+    assert by_site["Dallas A"]["aqi"] == 50
+    assert by_site["Dallas B"]["aqi"] == 55 and by_site["Dallas B"]["pollutant"] == "PM2.5"
