@@ -287,14 +287,14 @@ function renderCompare() {
 let map, tiles, rankings = [];
 
 function tileUrl() {
-  return `https://{s}.basemaps.cartocdn.com/${isDark() ? "dark_all" : "light_all"}/{z}/{x}/{y}{r}.png`;
+  return "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 }
 
 function renderMap() {
   if (!map) {
     map = L.map("leaflet", { scrollWheelZoom: false }).setView([31.2, -99.3], 6);
-    tiles = L.tileLayer(tileUrl(), { maxZoom: 12, subdomains: "abcd",
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>' }).addTo(map);
+    tiles = L.tileLayer(tileUrl(), { maxZoom: 12,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
   } else {
     tiles.setUrl(tileUrl());
     map.eachLayer((l) => { if (l instanceof L.CircleMarker) map.removeLayer(l); });
@@ -345,7 +345,7 @@ function renderLabSummary() {
   $("lab-table").innerHTML = `<thead><tr><th>#</th><th>Model</th><th class="num">MAE</th><th class="num">RMSE</th>
     <th class="num">Right category</th><th class="num">vs. "tomorrow = today"</th><th class="num">MAE on unhealthy days</th><th class="num">Train time</th></tr></thead><tbody>` +
     models.map((m, i) => `<tr class="${m.model === best ? "best" : ""}"><td class="num">${i + 1}</td>
-      <td><span class="legend"><span><i style="background:${modelColor(m.model)}"></i></span></span> ${esc(m.model)}</td>
+      <td><i style="display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;background:${modelColor(m.model)}"></i>${esc(m.model)}</td>
       <td class="num">${m.mae.toFixed(2)}</td><td class="num">${m.rmse.toFixed(2)}</td>
       <td class="num">${pct(m.category_accuracy)}</td>
       <td class="num">${m.model === "Persistence" ? "—" : `${m.mae_vs_persistence > 0 ? "" : "+"}${(-m.mae_vs_persistence * 100).toFixed(1)}%`}</td>
