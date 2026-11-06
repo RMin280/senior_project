@@ -1,6 +1,6 @@
 import { aqiColor, categories, scalePosition } from "@/lib/aqi"
 
-/** Six equal bands, one per category, with a marker at the reading. */
+/* AQI Scale from Good to Hazardous, line chart*/
 export function AqiScale({ aqi }: { aqi: number }) {
   return (
     <div

@@ -22,7 +22,7 @@ export default async function ZipCodePage({
             place={`Dallas, TX ${zip}`}
             aqi={42}
             description="The air is clean. A good day to be outside."
-            measured="Measured at 2:00 PM CT today, downtown Dallas monitor. Sample data."
+            measured="Measured at 2:00 PM CT today, downtown Dallas monitor. SAMPLE DATA."
             changeHref="/"
           />
         </section>

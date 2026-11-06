@@ -21,7 +21,7 @@ type AqiCardProps = {
   changeHref: string
 }
 
-/** The large card showing a place's current AQI, category and scale. */
+/* large card at top of dashboard page */
 export function AqiCard({
   place,
   aqi,
