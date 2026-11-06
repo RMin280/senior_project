@@ -1,6 +1,6 @@
 import { WindIcon } from "@phosphor-icons/react/ssr"
-import { Navbar } from "@/components/navbar"
-import { ZipSearch } from "@/components/locationsearch"
+import { Navbar } from "@/components/layout/navbar"
+import { ZipSearch } from "@/features/search"
 
 export default function Home() {
   return (

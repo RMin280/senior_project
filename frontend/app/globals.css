@@ -11,6 +11,7 @@
   --font-display: var(--font-geist);
 
   --color-background: var(--background);
+  --color-sky: var(--sky);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -35,24 +36,24 @@
   --color-chart-5: var(--chart-5);
 
   /* AQI categories: fill (dots, bars), tint (backgrounds), ink (text on tint) */
-  --color-aqi-good: #4caf7a;
-  --color-aqi-good-tint: #e4f3ea;
-  --color-aqi-good-ink: #1d5e3c;
-  --color-aqi-moderate: #e3bc2e;
-  --color-aqi-moderate-tint: #fbf4d9;
-  --color-aqi-moderate-ink: #6a4b00;
-  --color-aqi-sensitive: #f08a3c;
-  --color-aqi-sensitive-tint: #fdebdc;
-  --color-aqi-sensitive-ink: #8a3e06;
-  --color-aqi-unhealthy: #e2534a;
-  --color-aqi-unhealthy-tint: #fbe3e1;
-  --color-aqi-unhealthy-ink: #8e1f18;
-  --color-aqi-very-unhealthy: #9157a8;
-  --color-aqi-very-unhealthy-tint: #f1e6f5;
-  --color-aqi-very-unhealthy-ink: #5e2a73;
-  --color-aqi-hazardous: #7d2638;
-  --color-aqi-hazardous-tint: #f3e0e4;
-  --color-aqi-hazardous-ink: #6a1a2a;
+  --color-aqi-good: var(--aqi-good);
+  --color-aqi-good-tint: var(--aqi-good-tint);
+  --color-aqi-good-ink: var(--aqi-good-ink);
+  --color-aqi-moderate: var(--aqi-moderate);
+  --color-aqi-moderate-tint: var(--aqi-moderate-tint);
+  --color-aqi-moderate-ink: var(--aqi-moderate-ink);
+  --color-aqi-sensitive: var(--aqi-sensitive);
+  --color-aqi-sensitive-tint: var(--aqi-sensitive-tint);
+  --color-aqi-sensitive-ink: var(--aqi-sensitive-ink);
+  --color-aqi-unhealthy: var(--aqi-unhealthy);
+  --color-aqi-unhealthy-tint: var(--aqi-unhealthy-tint);
+  --color-aqi-unhealthy-ink: var(--aqi-unhealthy-ink);
+  --color-aqi-very-unhealthy: var(--aqi-very-unhealthy);
+  --color-aqi-very-unhealthy-tint: var(--aqi-very-unhealthy-tint);
+  --color-aqi-very-unhealthy-ink: var(--aqi-very-unhealthy-ink);
+  --color-aqi-hazardous: var(--aqi-hazardous);
+  --color-aqi-hazardous-tint: var(--aqi-hazardous-tint);
+  --color-aqi-hazardous-ink: var(--aqi-hazardous-ink);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -67,6 +68,7 @@
 
 :root {
   --background: #f7f9f6;
+  --sky: #e8f2eb;
   --foreground: #10201a;
   --card: #ffffff;
   --card-foreground: #10201a;
@@ -90,6 +92,25 @@
   --chart-4: #8a9891;
   --chart-5: #dde5df;
   --radius: 0.75rem;
+
+  --aqi-good: #4caf7a;
+  --aqi-good-tint: #e4f3ea;
+  --aqi-good-ink: #1d5e3c;
+  --aqi-moderate: #e3bc2e;
+  --aqi-moderate-tint: #fbf4d9;
+  --aqi-moderate-ink: #6a4b00;
+  --aqi-sensitive: #f08a3c;
+  --aqi-sensitive-tint: #fdebdc;
+  --aqi-sensitive-ink: #8a3e06;
+  --aqi-unhealthy: #e2534a;
+  --aqi-unhealthy-tint: #fbe3e1;
+  --aqi-unhealthy-ink: #8e1f18;
+  --aqi-very-unhealthy: #9157a8;
+  --aqi-very-unhealthy-tint: #f1e6f5;
+  --aqi-very-unhealthy-ink: #5e2a73;
+  --aqi-hazardous: #7d2638;
+  --aqi-hazardous-tint: #f3e0e4;
+  --aqi-hazardous-ink: #6a1a2a;
 }
 
 @layer base {
