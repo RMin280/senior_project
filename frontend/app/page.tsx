@@ -17,7 +17,7 @@ export default function Home() {
         <ZipSearch />
       </main>
       <footer className="px-6 pb-4 text-xs text-muted-foreground">
-        Data from the U.S. EPA (AirNow and AQS)
+        Data from the U.S. EPA
       </footer>
     </div>
   )
