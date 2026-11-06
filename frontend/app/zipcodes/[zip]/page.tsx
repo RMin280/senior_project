@@ -48,7 +48,7 @@ export default async function ZipCodePage({
 
         <PollutantsSection />
 
-        <ForecastSection history={history} />
+        <ForecastSection forecast={result.forecast} history={history} />
 
         <HistorySection history={history} forecast={result.forecast} />
       </main>

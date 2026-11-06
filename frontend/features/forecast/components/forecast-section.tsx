@@ -1,28 +1,36 @@
 import { Section } from "@/components/layout/section"
-import type { HistoryPoint } from "@/lib/api"
+import type { Forecast, HistoryPoint } from "@/lib/api"
+import { formatApiDate } from "@/lib/utils"
 import { ForecastDay } from "./forecast-day"
 import { TimelineChart } from "./timeline-chart"
 
-// Sample data now, replace with API
-const forecast = [
-  { day: "Tomorrow", date: "Fri, Oct 16", aqi: 48, error: 6 },
-  { day: "Saturday", date: "Sat, Oct 17", aqi: 57, error: 9 },
-  { day: "Sunday", date: "Sun, Oct 18", aqi: 63, error: 13 },
-]
+type ForecastSectionProps = {
+  forecast: Forecast | null
+  history: HistoryPoint[]
+}
 
-export function ForecastSection({ history }: { history: HistoryPoint[] }) {
+export function ForecastSection({ forecast, history }: ForecastSectionProps) {
   return (
     <Section
       id="forecast"
       band
-      title="The next three days"
-      description="Here's what to expect."
+      title="Next-day forecast"
+      description="What our model expects the day after the latest reading."
     >
-      <div className="mt-6 grid gap-x-10 gap-y-2 sm:grid-cols-3">
-        {forecast.map((day) => (
-          <ForecastDay key={day.day} {...day} />
-        ))}
-      </div>
+      {forecast ? (
+        <div className="mt-6 max-w-sm">
+          <ForecastDay
+            day={formatApiDate(forecast.forecast_date, { weekday: "long" })}
+            date={formatApiDate(forecast.forecast_date)}
+            aqi={forecast.predicted_aqi}
+            error={Math.round(forecast.expected_error)}
+          />
+        </div>
+      ) : (
+        <p className="mt-6 text-muted-foreground">
+          No forecast for this area right now.
+        </p>
+      )}
       {/* The chart shows 90 days at most, so don't send it all of history */}
       <TimelineChart history={history.slice(-90)} />
     </Section>
