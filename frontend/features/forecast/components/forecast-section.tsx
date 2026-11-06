@@ -1,4 +1,5 @@
 import { Section } from "@/components/layout/section"
+import type { HistoryPoint } from "@/lib/api"
 import { ForecastDay } from "./forecast-day"
 import { TimelineChart } from "./timeline-chart"
 
@@ -9,19 +10,7 @@ const forecast = [
   { day: "Sunday", date: "Sun, Oct 18", aqi: 63, error: 13 },
 ]
 
-// 90 days of sample history ending today (Oct 15), which matches the AQI card's 42.
-const history = Array.from({ length: 90 }, (_, i) => {
-  const date = new Date(2026, 9, 15 - 89 + i)
-  return {
-    date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-    aqi:
-      i === 89
-        ? 42
-        : Math.round(45 + 12 * Math.sin(i / 5) + 8 * Math.sin(i * 1.7)),
-  }
-})
-
-export function ForecastSection() {
+export function ForecastSection({ history }: { history: HistoryPoint[] }) {
   return (
     <Section
       id="forecast"

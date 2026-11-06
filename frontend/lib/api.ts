@@ -26,14 +26,13 @@ export type ZipResult = {
   zip: string
   home_county_code: number
   home_county_name: string
-  
+
   /* use nearest county for aqi */
   uses_nearest_county: boolean
   distance_km: number
   county: County
   forecast: Forecast | null
 }
-
 
 export async function getZip(zip: string): Promise<ZipResult | null> {
   const response = await fetch(`${API_URL}/api/zip/${encodeURIComponent(zip)}`)
@@ -43,9 +42,20 @@ export async function getZip(zip: string): Promise<ZipResult | null> {
   return response.json()
 }
 
-export function formatApiDate(date: string) {
-  return new Date(date).toLocaleDateString("en-US", {
-    dateStyle: "long",
-    timeZone: "UTC",
-  })
+export type HistoryPoint = {
+  date: string
+  aqi: number
+  category: string
+
+  /* pollutant behind that day's AQI */
+  driver: string
+}
+
+/* last year of readings */
+export async function getHistory(countyCode: number): Promise<HistoryPoint[]> {
+  const response = await fetch(`${API_URL}/api/counties/${countyCode}/history`)
+
+  if (!response.ok) throw new Error(`API returned ${response.status}`)
+  const { points } = await response.json()
+  return points
 }

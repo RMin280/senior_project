@@ -4,7 +4,8 @@ import { AqiCard } from "@/features/air-quality"
 import { ForecastSection } from "@/features/forecast"
 import { HistorySection } from "@/features/history"
 import { PollutantsSection } from "@/features/pollutants"
-import { formatApiDate, getZip, type ZipResult } from "@/lib/api"
+import { getHistory, getZip, type ZipResult } from "@/lib/api"
+import { formatApiDate } from "@/lib/utils"
 
 const MILES_PER_KM = 0.621371
 
@@ -26,6 +27,7 @@ export default async function ZipCodePage({
   const { zip } = await params
   const result = await getZip(zip)
   if (!result) notFound()
+  const history = await getHistory(result.county.county_code)
 
   return (
     <div className="flex min-h-screen flex-col bg-linear-to-b from-sky to-background bg-size-[100%_40rem] bg-no-repeat">
@@ -46,7 +48,7 @@ export default async function ZipCodePage({
 
         <PollutantsSection />
 
-        <ForecastSection />
+        <ForecastSection history={history} />
 
         <HistorySection />
       </main>
