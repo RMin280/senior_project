@@ -31,9 +31,9 @@ type TimelineChartProps = {
 const ranges = { "1W": 7, "1M": 30, "3M": 90 }
 type Range = keyof typeof ranges
 
-// Chart Coloring
+// Chart Coloring (same line color as the map's pollutant sparklines)
 const chartConfig = {
-  aqi: { label: "AQI", color: "var(--foreground)" },
+  aqi: { label: "AQI", color: "var(--aqi-sensitive)" },
 } satisfies ChartConfig
 
 /* formats date as shorter form like "Nov 6" */

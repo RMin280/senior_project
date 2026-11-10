@@ -1,4 +1,6 @@
+import Link from "next/link"
 import { notFound } from "next/navigation"
+import { ArrowLeftIcon } from "@phosphor-icons/react/ssr"
 import { Navbar } from "@/components/layout/navbar"
 import { AqiCard } from "@/features/air-quality"
 import { ForecastSection } from "@/features/forecast"
@@ -38,6 +40,14 @@ export default async function ZipCodePage({
           aria-label="Latest air quality"
           className="mx-auto w-full max-w-4xl px-4 pt-8"
         >
+          {/* Same outline style as the back button in the map's side panel */}
+          <Link
+            href={`/map/${zip}`}
+            className="mb-4 inline-flex items-center gap-2 rounded-full bg-background px-4 py-2.5 text-sm font-semibold ring-1 ring-border ring-inset hover:bg-muted"
+          >
+            <ArrowLeftIcon size={16} weight="bold" aria-hidden />
+            Back to map
+          </Link>
           <AqiCard
             place={`${result.home_county_name} County, TX ${zip}`}
             aqi={result.county.latest_aqi}

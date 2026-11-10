@@ -16,12 +16,15 @@ export function AqiScale({
       className={cn("flex w-full max-w-xs flex-col gap-2", className)}
     >
       <div className="relative flex h-4.5 items-center">
-        <div className="flex h-1.5 w-full gap-0.5">
+        {/* Segments are split by a see-through 4px border instead of a gap. Browsers round
+            border widths to whole screen pixels, so every split is the same width; a gap can
+            land on a fraction of a pixel at 125% display scaling and get drawn wider or narrower. */}
+        <div className="flex h-1.5 w-full">
           {categories.map((category) => (
             <span
               key={category.key}
-              className="flex-1 first:rounded-l last:rounded-r"
-              style={{ background: aqiColor(category.key) }}
+              className="flex-1 border-l-4 border-transparent bg-clip-padding first:rounded-l first:border-l-0 last:rounded-r"
+              style={{ backgroundColor: aqiColor(category.key) }}
             />
           ))}
         </div>

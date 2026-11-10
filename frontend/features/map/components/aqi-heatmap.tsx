@@ -24,6 +24,10 @@ const GRID_W = 360
 // Past this distance from every monitor, the color fades out (we don't know the air there)
 const FADE_START_KM = 60
 const FADE_END_KM = 180
+// Each spot on the map blends only its nearest monitors, closer ones counting much more
+// (1/distance^POWER). Blending all of them let far-away readings wash out a local one.
+const NEAREST = 6
+const POWER = 3
 
 // Monitor dots, and the one picked on the map
 const DOT: CircleMarkerOptions = { radius: 4, weight: 1.5, color: "#ffffff" }
@@ -66,7 +70,7 @@ function makeColorScale() {
   return (aqi: number) => colors[getCategory(Math.round(aqi)).index]
 }
 
-/* Inverse-distance-weighted AQI surface, clipped to the Texas outline */
+/* Inverse-distance-weighted AQI surface from the nearest monitors, clipped to the Texas outline */
 function drawSurface(sites: MonitorReading[], outline: number[][][]) {
   const yTop = mercY(BOUNDS.north)
   const yBottom = mercY(BOUNDS.south)
@@ -81,22 +85,36 @@ function drawSurface(sites: MonitorReading[], outline: number[][][]) {
   surface.height = gridH
   const ctx = surface.getContext("2d")!
   const image = ctx.createImageData(GRID_W, gridH)
+  // The NEAREST closest monitors to the current spot, sorted by distance
+  const dist = new Float64Array(NEAREST)
+  const aqi = new Float64Array(NEAREST)
 
   for (let row = 0; row < gridH; row++) {
     const lat = invMercY(yTop - ((row + 0.5) / gridH) * (yTop - yBottom))
     for (let col = 0; col < GRID_W; col++) {
       const lon =
         BOUNDS.west + ((col + 0.5) / GRID_W) * (BOUNDS.east - BOUNDS.west)
-      let weight = 0
-      let total = 0
-      let nearest = Infinity
+      dist.fill(Infinity)
       for (const s of sites) {
         const d = Math.max(km(lat, lon, s.lat, s.lon), 1)
-        nearest = Math.min(nearest, d)
-        const w = 1 / (d * d)
-        weight += w
-        total += w * s.aqi
+        if (d >= dist[NEAREST - 1]) continue
+        // Insert, keeping the list sorted
+        let k = NEAREST - 1
+        for (; k > 0 && dist[k - 1] > d; k--) {
+          dist[k] = dist[k - 1]
+          aqi[k] = aqi[k - 1]
+        }
+        dist[k] = d
+        aqi[k] = s.aqi
       }
+      let weight = 0
+      let total = 0
+      for (let k = 0; k < NEAREST && dist[k] < Infinity; k++) {
+        const w = 1 / dist[k] ** POWER
+        weight += w
+        total += w * aqi[k]
+      }
+      const nearest = dist[0]
       const fade =
         nearest <= FADE_START_KM
           ? 1
@@ -262,18 +280,23 @@ export function HeatmapLegend({ date }: { date?: string }) {
   return (
     <div className="pointer-events-auto rounded-xl bg-card/95 px-3 py-2 text-xs shadow-overlay">
       <div className="mb-1.5 font-medium">AQI{date ? ` · ${date}` : ""}</div>
-      <div className="flex gap-0.5">
+      {/* Segments are split by a see-through border, not a gap, so every split is the same
+          width at any display scaling (see AqiScale) */}
+      <div className="flex">
         {categories.slice(0, 5).map((c, i, shown) => (
           <div key={c.key} className="flex flex-col items-center gap-1">
             {/* Round only the two ends of the bar. (`first:` matched every segment,
                 since each one is the first child of its own column.) */}
             <span
               className={cn(
-                "h-2 w-10",
-                i === 0 && "rounded-l",
+                "h-2 bg-clip-padding",
+                // 3px split, plus 40px of color like the first segment
+                i === 0
+                  ? "w-10 rounded-l"
+                  : "w-[43px] border-l-3 border-transparent",
                 i === shown.length - 1 && "rounded-r",
               )}
-              style={{ background: `var(--aqi-${c.key})` }}
+              style={{ backgroundColor: `var(--aqi-${c.key})` }}
             />
             <span className="text-muted-foreground">{c.lo}</span>
           </div>
