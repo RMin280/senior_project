@@ -22,6 +22,8 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 The dashboard reads live data from the Flask API, so start that first (see [backend/README.md](../backend/README.md)). Without it, ZIP pages show an error screen.
 
+To work on the UI without setting up the backend, run `npm run mock-api` instead. It serves fake data for the same routes on the same port (`mock/server.mjs`). Only one of the two can run at a time.
+
 ## Pages
 
 - `/`: landing page with ZIP search, which goes to the map

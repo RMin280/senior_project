@@ -45,6 +45,24 @@ export async function getZip(zip: string): Promise<ZipResult | null> {
   return response.json()
 }
 
+/* one county's latest reading, or null if the API has no data for it */
+export async function getCounty(countyCode: number): Promise<County | null> {
+  const response = await fetch(`${API_URL}/api/counties/${countyCode}`)
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`API returned ${response.status}`)
+  return response.json()
+}
+
+/* a county's forecast for the day after its latest reading, or null if it stopped reporting */
+export async function getForecast(
+  countyCode: number,
+): Promise<Forecast | null> {
+  const response = await fetch(`${API_URL}/api/counties/${countyCode}/forecast`)
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`API returned ${response.status}`)
+  return response.json()
+}
+
 export type HistoryPoint = {
   date: string
   aqi: number

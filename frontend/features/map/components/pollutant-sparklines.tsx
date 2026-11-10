@@ -78,7 +78,7 @@ export function PollutantSparklines({
             <div>
               <div className="text-sm font-semibold">{name}</div>
               <div className="flex items-baseline gap-1.5">
-                <span className="font-display text-2xl tabular-nums">
+                <span className="font-display text-xl leading-tight tabular-nums">
                   {latest.aqi}
                 </span>
                 <span className="text-xs text-muted-foreground">AQI</span>
@@ -100,7 +100,7 @@ export function PollutantSparklines({
             <div title={ABOUT[name]}>
               <ChartContainer
                 config={chartConfig}
-                className="aspect-auto h-16 w-full"
+                className="aspect-auto h-14 w-full"
               >
                 <LineChart
                   data={points}

@@ -4,14 +4,16 @@ import type { SubmitEvent } from "react"
 import { useRouter } from "next/navigation"
 import { MagnifyingGlassIcon, MapPinIcon } from "@phosphor-icons/react"
 
-/** Compact ZIP search that sits on top of the map. */
-export function MapSearch({ defaultZip }: { defaultZip?: string }) {
+/** Compact ZIP search that sits on top of the map. Empties itself after each search. */
+export function MapSearch() {
   const router = useRouter()
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
-    const zip = new FormData(event.currentTarget).get("zip")
+    const form = event.currentTarget
+    const zip = new FormData(form).get("zip")
     router.push(`/map/${zip}`)
+    form.reset()
   }
 
   return (
@@ -34,7 +36,6 @@ export function MapSearch({ defaultZip }: { defaultZip?: string }) {
         title="Enter a 5-digit ZIP code"
         aria-label="Search ZIP code"
         placeholder="Search"
-        defaultValue={defaultZip}
         className="h-full min-w-0 flex-1 bg-transparent px-2.5 text-sm tracking-wide outline-none placeholder:text-muted-foreground"
       />
       <button

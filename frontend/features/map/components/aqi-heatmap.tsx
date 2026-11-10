@@ -1,14 +1,20 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import type { CircleMarker, CircleMarkerOptions } from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { categories, getCategory } from "@/lib/aqi"
 import type { MonitorReading } from "@/lib/api"
 
+type Pin = { lat: number; lon: number; label: string }
+
 type AqiHeatmapProps = {
   sites: MonitorReading[]
   /* the searched zip code's location, shown as a pin */
-  pin?: { lat: number; lon: number; label: string }
+  pin?: Pin
+  /* name of the monitor picked on the map, drawn larger */
+  selected?: string
 }
 
 // Texas bounding box, a little padded
@@ -17,6 +23,14 @@ const GRID_W = 360
 // Past this distance from every monitor, the color fades out (we don't know the air there)
 const FADE_START_KM = 60
 const FADE_END_KM = 180
+
+// Monitor dots, and the one picked on the map
+const DOT: CircleMarkerOptions = { radius: 4, weight: 1.5, color: "#ffffff" }
+const PICKED_DOT: CircleMarkerOptions = {
+  radius: 8,
+  weight: 3,
+  color: "#10201a",
+}
 
 /* Web Mercator so the image lines up with the map tiles */
 const mercY = (lat: number) =>
@@ -41,29 +55,14 @@ function hexToRgb(hex: string): [number, number, number] {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
 }
 
-/* AQI -> color, blending smoothly between the category colors from globals.css */
+/* AQI -> its category's color from globals.css, in solid steps like the legend.
+   Blending between categories gave in-between values muddy olive tones. */
 function makeColorScale() {
   const style = getComputedStyle(document.documentElement)
-  const stops = categories.map((c) => ({
-    aqi: (c.lo + Math.min(c.hi, 400)) / 2,
-    rgb: hexToRgb(style.getPropertyValue(`--aqi-${c.key}`).trim() || "#888888"),
-  }))
-  return (aqi: number): [number, number, number] => {
-    if (aqi <= stops[0].aqi) return stops[0].rgb
-    for (let i = 1; i < stops.length; i++) {
-      if (aqi <= stops[i].aqi) {
-        const t = (aqi - stops[i - 1].aqi) / (stops[i].aqi - stops[i - 1].aqi)
-        const a = stops[i - 1].rgb
-        const b = stops[i].rgb
-        return [0, 1, 2].map((k) => Math.round(a[k] + (b[k] - a[k]) * t)) as [
-          number,
-          number,
-          number,
-        ]
-      }
-    }
-    return stops[stops.length - 1].rgb
-  }
+  const colors = categories.map((c) =>
+    hexToRgb(style.getPropertyValue(`--aqi-${c.key}`).trim() || "#888888"),
+  )
+  return (aqi: number) => colors[getCategory(Math.round(aqi)).index]
 }
 
 /* Inverse-distance-weighted AQI surface, clipped to the Texas outline */
@@ -109,7 +108,7 @@ function drawSurface(sites: MonitorReading[], outline: number[][][]) {
       image.data[i] = r
       image.data[i + 1] = g
       image.data[i + 2] = b
-      image.data[i + 3] = Math.round(170 * (0.25 + 0.75 * fade))
+      image.data[i + 3] = Math.round(190 * (0.25 + 0.75 * fade))
     }
   }
   ctx.putImageData(image, 0, 0)
@@ -130,16 +129,27 @@ function drawSurface(sites: MonitorReading[], outline: number[][][]) {
     out.closePath()
   }
   out.clip()
-  out.filter = "blur(2px)"
+  // Just enough blur to soften the edges between categories
+  out.filter = "blur(1.5px)"
   out.drawImage(surface, 0, 0)
   return clipped.toDataURL()
 }
 
 /** Map of Texas colored by the latest AQI at each monitor, blended in between. */
-export function AqiHeatmap({ sites, pin }: AqiHeatmapProps) {
+export function AqiHeatmap({ sites, pin, selected }: AqiHeatmapProps) {
   const container = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+  const pathname = usePathname()
+  const [dots, setDots] = useState<Map<string, CircleMarker>>()
+
+  // Picking a monitor re-renders the page, which passes new copies of these
+  // props. Rebuild the map only when their contents change, so it keeps its zoom.
+  const sitesJson = JSON.stringify(sites)
+  const pinJson = JSON.stringify(pin ?? null)
 
   useEffect(() => {
+    const sites: MonitorReading[] = JSON.parse(sitesJson)
+    const pin: Pin | null = JSON.parse(pinJson)
     let map: import("leaflet").Map | undefined
     let cancelled = false
 
@@ -186,21 +196,27 @@ export function AqiHeatmap({ sites, pin }: AqiHeatmapProps) {
         interactive: false,
       }).addTo(map)
 
-      // Each monitor: a small dot with its reading on hover
+      // Each monitor: a small dot with its reading on hover. Clicking one
+      // shows that monitor in the side panel (?site=<name>).
       const style = getComputedStyle(document.documentElement)
+      const byName = new Map<string, CircleMarker>()
       for (const s of sites) {
         const category = getCategory(s.aqi)
-        L.circleMarker([s.lat, s.lon], {
-          radius: 4,
-          weight: 1.5,
-          color: "#ffffff",
+        const dot = L.circleMarker([s.lat, s.lon], {
+          ...DOT,
           fillColor: style.getPropertyValue(`--aqi-${category.key}`).trim(),
           fillOpacity: 1,
         })
           .bindTooltip(
             `<b>${escapeHtml(s.site)}</b><br>AQI ${s.aqi} · ${category.name}<br><span style="opacity:.7">${s.pollutant}</span>`,
           )
+          .on("click", () =>
+            router.push(`${pathname}?site=${encodeURIComponent(s.site)}`, {
+              scroll: false,
+            }),
+          )
           .addTo(map)
+        byName.set(s.site, dot)
       }
 
       if (pin) {
@@ -212,6 +228,7 @@ export function AqiHeatmap({ sites, pin }: AqiHeatmapProps) {
         })
         L.marker([pin.lat, pin.lon], { icon, keyboard: false }).addTo(map)
       }
+      setDots(byName)
     }
 
     setup()
@@ -219,7 +236,15 @@ export function AqiHeatmap({ sites, pin }: AqiHeatmapProps) {
       cancelled = true
       map?.remove()
     }
-  }, [sites, pin])
+  }, [sitesJson, pinJson, pathname, router])
+
+  // Draw the picked monitor larger, on top of the others
+  useEffect(() => {
+    dots?.forEach((dot, name) => {
+      dot.setStyle(name === selected ? PICKED_DOT : DOT)
+      if (name === selected) dot.bringToFront()
+    })
+  }, [dots, selected])
 
   return (
     <div
