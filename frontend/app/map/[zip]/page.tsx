@@ -34,7 +34,8 @@ export default async function MapPage({
 
   return (
     <div className="flex h-dvh flex-col">
-      <Navbar />
+      {/* z-index above the map's layers (but below its overlays) so the shadow falls on the map */}
+      <Navbar className="relative z-[999] shadow-overlay" />
       <main className="relative flex-1 overflow-hidden max-lg:overflow-y-auto">
         <div className="absolute inset-0 max-lg:relative max-lg:h-[55vh]">
           <AqiHeatmap
@@ -102,6 +103,7 @@ async function monitorPanel(monitor: MonitorReading, zip: string) {
     county,
     forecast,
     pollutants,
-    link: { href: `/map/${zip}`, label: `Back to ${zip}`, back: true },
+    link: { href: `/zipcodes/${zip}`, label: "Open full dashboard" },
+    back: { href: `/map/${zip}`, to: zip },
   }
 }

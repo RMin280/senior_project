@@ -1,14 +1,15 @@
 import Link from "next/link"
 import { WindIcon } from "@phosphor-icons/react/ssr"
+import { cn } from "@/lib/utils"
 
 const links = [
   { href: "/accuracy", label: "how it works" },
   { href: "/about", label: "about" },
 ]
 
-export function Navbar() {
+export function Navbar({ className }: { className?: string }) {
   return (
-    <header className="flex h-14 items-center px-6">
+    <header className={cn("flex h-14 items-center px-6", className)}>
       <nav aria-label="Main" className="flex items-center gap-7 text-sm">
         <Link
           href="/"

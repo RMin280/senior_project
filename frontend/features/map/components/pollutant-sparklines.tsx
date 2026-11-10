@@ -142,8 +142,8 @@ export function PollutantSparklines({
         )
       })}
       {names.length > 0 && (
-        <p className="text-xs text-muted-foreground">
-          Daily AQI for each pollutant, worst monitor in the county. Source:
+        <p className="mt-1 text-xs text-muted-foreground">
+          Daily AQI for each pollutant, highest reading in the county. Source:
           AirNow.
         </p>
       )}

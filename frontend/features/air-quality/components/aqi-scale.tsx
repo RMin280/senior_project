@@ -1,12 +1,19 @@
 import { aqiColor, categories, scalePosition } from "@/lib/aqi"
+import { cn } from "@/lib/utils"
 
-/* AQI Scale from Good to Hazardous, line chart*/
-export function AqiScale({ aqi }: { aqi: number }) {
+/* AQI Scale from Good to Hazardous, line chart. Capped at max-w-xs unless className overrides it. */
+export function AqiScale({
+  aqi,
+  className,
+}: {
+  aqi: number
+  className?: string
+}) {
   return (
     <div
       role="img"
       aria-label={`AQI ${aqi} on the scale from Good to Hazardous`}
-      className="flex w-full max-w-xs flex-col gap-2"
+      className={cn("flex w-full max-w-xs flex-col gap-2", className)}
     >
       <div className="relative flex h-4.5 items-center">
         <div className="flex h-1.5 w-full gap-0.5">

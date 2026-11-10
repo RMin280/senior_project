@@ -6,6 +6,7 @@ import type { CircleMarker, CircleMarkerOptions } from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { categories, getCategory } from "@/lib/aqi"
 import type { MonitorReading } from "@/lib/api"
+import { cn } from "@/lib/utils"
 
 type Pin = { lat: number; lon: number; label: string }
 
@@ -259,13 +260,19 @@ export function AqiHeatmap({ sites, pin, selected }: AqiHeatmapProps) {
 /** Small key for the heatmap colors. */
 export function HeatmapLegend({ date }: { date?: string }) {
   return (
-    <div className="pointer-events-auto rounded-xl bg-card/95 px-3 py-2 text-xs shadow-raised">
+    <div className="pointer-events-auto rounded-xl bg-card/95 px-3 py-2 text-xs shadow-overlay">
       <div className="mb-1.5 font-medium">AQI{date ? ` · ${date}` : ""}</div>
       <div className="flex gap-0.5">
-        {categories.slice(0, 5).map((c) => (
+        {categories.slice(0, 5).map((c, i, shown) => (
           <div key={c.key} className="flex flex-col items-center gap-1">
+            {/* Round only the two ends of the bar. (`first:` matched every segment,
+                since each one is the first child of its own column.) */}
             <span
-              className="h-2 w-10 first:rounded-l"
+              className={cn(
+                "h-2 w-10",
+                i === 0 && "rounded-l",
+                i === shown.length - 1 && "rounded-r",
+              )}
               style={{ background: `var(--aqi-${c.key})` }}
             />
             <span className="text-muted-foreground">{c.lo}</span>
