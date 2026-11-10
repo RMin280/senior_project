@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import Link from "next/link"
 import { MapPinIcon } from "@phosphor-icons/react/ssr"
 import {
@@ -13,8 +14,11 @@ import { AqiScale } from "./aqi-scale"
 import { getCategory } from "@/lib/aqi"
 
 type AqiCardProps = {
-  place: string
+  /* text, or formatted text like a monitor name with smaller site codes */
+  place: ReactNode
   aqi: number
+  /* what the big number is, e.g. "Our forecast for Monday, November 9" */
+  label: string
   advice?: string
   measured: string
   changeHref: string
@@ -24,6 +28,7 @@ type AqiCardProps = {
 export function AqiCard({
   place,
   aqi,
+  label,
   advice,
   measured,
   changeHref,
@@ -35,7 +40,8 @@ export function AqiCard({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MapPinIcon size={18} className="text-primary" aria-hidden />
-          {place}
+          {/* One span, so the place wraps as a single run of text beside the icon */}
+          <span>{place}</span>
         </CardTitle>
         <CardAction>
           <Link
@@ -49,8 +55,11 @@ export function AqiCard({
 
       <CardContent className="flex flex-col items-start gap-3">
         <h1 className="sr-only">
-          Latest air quality: {aqi}, {category.name}
+          {label}: {aqi}, {category.name}
         </h1>
+        <p aria-hidden className="text-sm text-muted-foreground">
+          {label}
+        </p>
         <AqiNumber aqi={aqi} />
 
         <AqiChip aqi={aqi} />

@@ -63,7 +63,9 @@ export function ForecastPanel({
         <p className="mt-2 text-sm text-muted-foreground">{place}</p>
       </header>
 
-      <section aria-labelledby="our-forecast" className="flex flex-col gap-3">
+      {/* Spaced in two groups (the forecast with what it means, then the scale with its
+          details) instead of an even 12px between everything; same total height */}
+      <section aria-labelledby="our-forecast" className="flex flex-col">
         <div className="flex items-baseline justify-between border-b pb-2">
           <h2 id="our-forecast" className="font-display text-lg font-semibold">
             Our forecast
@@ -78,10 +80,11 @@ export function ForecastPanel({
             </span>
           )}
         </div>
-        {/* The chip sits beside the number, and wraps under it when the name is long */}
-        <div className="flex flex-wrap items-end justify-between gap-3">
+        {/* The chip sits beside the number on its baseline, and wraps under it when the name is long */}
+        <div className="mt-4 flex flex-wrap items-baseline justify-between gap-3">
           <div className="flex items-start gap-2.5">
-            <span className="font-display text-7xl leading-none font-light tracking-tighter tabular-nums">
+            {/* 80px, a step up from text-7xl; the smaller description below pays for the height */}
+            <span className="font-display text-[5rem] leading-none font-light tracking-tighter tabular-nums">
               {aqi}
             </span>
             <span className="mt-2 text-sm leading-tight font-medium text-muted-foreground">
@@ -92,12 +95,12 @@ export function ForecastPanel({
           </div>
           <AqiChip aqi={aqi} />
         </div>
-        <p className="font-display text-lg leading-snug">
+        <p className="mt-2 font-display text-base leading-snug">
           {category.description}
         </p>
         {/* Full width, so it lines up with the section dividers */}
-        <AqiScale aqi={aqi} className="max-w-none" />
-        <p className="text-xs text-muted-foreground">
+        <AqiScale aqi={aqi} className="mt-4 max-w-none" />
+        <p className="mt-2 text-xs text-muted-foreground">
           {forecast
             ? `Usually within ±${Math.round(forecast.expected_error)} AQI. Latest reading ${county.latest_aqi} on ${formatApiDate(county.latest_date, { month: "short", day: "numeric" })}.`
             : `No forecast for this county. Latest reading on ${formatApiDate(county.latest_date)}.`}

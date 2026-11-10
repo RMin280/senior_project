@@ -124,3 +124,55 @@ export async function getMapPoints(): Promise<{
   if (!response.ok) throw new Error(`API returned ${response.status}`)
   return response.json()
 }
+
+export type ModelScore = {
+  /* typical miss in AQI points (mean absolute error) */
+  mae: number
+  rmse: number
+  /* share of days forecast in the right AQI category, 0 to 1 */
+  category_accuracy: number
+  /* county-days scored */
+  n: number
+}
+
+export type ModelInfo = {
+  model: string
+  target: string
+  /* first and last held-out test day */
+  test_period: [string, string]
+  /* the model and each simple baseline, scored on the same test days */
+  results: Record<string, ModelScore>
+  /* how much smaller the model's typical miss is than the best baseline's, 0 to 1 */
+  mae_improvement_vs_best_baseline: number
+  overall_expected_error: number
+}
+
+/* how accurate the forecast model is, for the How it works page */
+export async function getModelInfo(): Promise<ModelInfo> {
+  const response = await fetch(`${API_URL}/api/model`)
+  if (!response.ok) throw new Error(`API returned ${response.status}`)
+  return response.json()
+}
+
+export type ComparedModel = {
+  model: string
+  /* one-line plain-language description */
+  about: string
+  mae: number
+  category_accuracy: number
+}
+
+export type ModelComparison = {
+  test_start: string
+  test_end: string
+  n_test_days: number
+  models: ComparedModel[]
+}
+
+/* every model type that was tried, scored on the same test days; null if the comparison wasn't run */
+export async function getModelComparison(): Promise<ModelComparison | null> {
+  const response = await fetch(`${API_URL}/api/models/comparison`)
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`API returned ${response.status}`)
+  return response.json()
+}

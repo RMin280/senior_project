@@ -15,7 +15,7 @@ import {
   type MonitorReading,
   type ZipResult,
 } from "@/lib/api"
-import { formatApiDate } from "@/lib/utils"
+import { formatApiDate, splitMonitorName } from "@/lib/utils"
 
 /* Map view: Texas AQI heatmap with a forecast panel on the left, for the
    searched ZIP or for a monitor picked on the map (?site=<monitor name>). */
@@ -92,10 +92,8 @@ async function monitorPanel(monitor: MonitorReading, zip: string) {
     getPollutants(code),
   ])
   if (!county) return null
-  // AirNow names end with the state's site codes, e.g. "Northwest Harris Co. C26/C110/C154".
-  // The panel shows the codes smaller, after the name.
-  const [, name = monitor.site, codes] =
-    monitor.site.match(/^(.+?)\s+(C\d+(?:\/C\d+)*)$/) ?? []
+  // The site codes show smaller, after the name
+  const { name, codes } = splitMonitorName(monitor.site)
   return {
     title: name,
     titleNote: codes,
@@ -103,7 +101,11 @@ async function monitorPanel(monitor: MonitorReading, zip: string) {
     county,
     forecast,
     pollutants,
-    link: { href: `/zipcodes/${zip}`, label: "Open full dashboard" },
+    // The dashboard shows the same monitor, and its "Back to map" returns here
+    link: {
+      href: `/zipcodes/${zip}?site=${encodeURIComponent(monitor.site)}`,
+      label: "Open full dashboard",
+    },
     back: { href: `/map/${zip}`, to: zip },
   }
 }
