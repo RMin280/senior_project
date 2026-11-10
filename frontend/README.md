@@ -22,6 +22,12 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 The dashboard reads live data from the Flask API, so start that first (see [backend/README.md](../backend/README.md)). Without it, ZIP pages show an error screen.
 
+## Pages
+
+- `/`: landing page with ZIP search, which goes to the map
+- `/map/<zip>`: Texas AQI heatmap (`features/map`) with the ZIP's forecast and pollutant trends, plus a link to the dashboard. Uses Leaflet with OpenStreetMap tiles; the Texas outline is `public/texas.json`.
+- `/zipcodes/<zip>`: full dashboard
+
 The frontend looks for the API at `http://localhost:5000`. To use a different address, copy `.env.example` to `.env.local` and change `API_URL`.
 
 All API calls live in `lib/api.ts`. They run on the server, so `API_URL` never reaches the browser.

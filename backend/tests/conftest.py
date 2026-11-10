@@ -77,6 +77,17 @@ def app(tmp_path_factory, raw):
         "results": {"LightGBM": {"mae": 8.0}},
         "mae_improvement_vs_best_baseline": 0.25, "overall_expected_error": 8.0}))
 
+    # AirNow per-pollutant data for the last 5 days, two monitors in Dallas
+    days = pd.date_range("2025-12-27", "2025-12-31")
+    pd.DataFrame({"county_code": 113, "date": days, "aqi_Ozone": [30, 35, 40, 45, 50],
+                  "aqi_PM2.5": [20, 25, None, 30, 55], "aqi": [30, 35, 40, 45, 55],
+                  "defining_parameter": "Ozone", "n_sites": 2}).to_parquet(
+        d / "airnow_county.parquet", index=False)
+    pd.DataFrame({"date": [days[-1]] * 3, "full_aqsid": ["840481130001", "840481130002", "840481130002"],
+                  "site": ["Dallas A", "Dallas B", "Dallas B"], "pollutant": ["Ozone", "Ozone", "PM2.5"],
+                  "aqi": [50, 40, 55], "lat": [32.8, 32.9, 32.9], "lon": [-96.8, -96.7, -96.7],
+                  "county_code": 113}).to_parquet(d / "airnow_sites.parquet", index=False)
+
     (d / "comparison.json").write_text(json.dumps({
         "n_test_days": 10, "models": [{"model": "LightGBM", "mae": 8.0}]}))
     dates = pd.date_range("2025-12-01", periods=10)

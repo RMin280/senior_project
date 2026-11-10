@@ -10,8 +10,11 @@ export function ZipSearch() {
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
-    const zip = new FormData(event.currentTarget).get("zip")
-    router.push(`/zipcodes/${zip}`)
+    const form = event.currentTarget
+    const zip = new FormData(form).get("zip")
+    router.push(`/map/${zip}`)
+    // Next keeps visited pages alive, so going back would still show this ZIP
+    form.reset()
   }
 
   return (

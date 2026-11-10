@@ -114,7 +114,13 @@ def main():
         "overall_expected_error": round(results["LightGBM"]["mae"], 1),
     }
     (REPORTS_DIR / "metrics.json").write_text(json.dumps(metrics, indent=2))
-    joblib.dump({"model": model, "features": feats,
+    # Final model: same settings, refit on ALL data (2015 to the latest day) so live
+    # forecasts learn from the newest years. Reported scores stay the held-out ones above.
+    final = lgb.LGBMRegressor(**{**params, "n_estimators": model.best_iteration_})
+    final.fit(df[feats], df["target"])
+    metrics["final_model_trained_through"] = str(df["date"].max().date())
+    (REPORTS_DIR / "metrics.json").write_text(json.dumps(metrics, indent=2))
+    joblib.dump({"model": final, "features": feats,
                  "best_iteration": model.best_iteration_,
                  "expected_error_by_county": metrics["expected_error_by_county"],
                  "overall_expected_error": metrics["overall_expected_error"]},
