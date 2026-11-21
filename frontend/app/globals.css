@@ -64,6 +64,9 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 
   --shadow-raised: 0 10px 30px rgb(16 32 26 / 0.07);
+  /* Map overlays (side panel, legend, top bar): a tight edge plus a soft halo, so they stand out from the map */
+  --shadow-overlay:
+    0 1px 2px rgb(16 32 26 / 0.1), 0 2px 10px rgb(16 32 26 / 0.12);
 }
 
 :root {
@@ -135,4 +138,36 @@
     radial-gradient(90% 60% at 50% 0%, #c6e2cf 0%, transparent 70%),
     radial-gradient(70% 45% at 50% 100%, #dcefe2 0%, transparent 75%),
     linear-gradient(180deg, #ddeee3 0%, #eef6f0 55%, #f3f8f4 100%);
+}
+
+/* Searched ZIP pin on the map (features/map) */
+.map-pin {
+  position: relative;
+  width: 30px;
+  height: 40px;
+  filter: drop-shadow(0 3px 6px rgb(16 32 26 / 0.25));
+}
+.map-pin span {
+  position: absolute;
+  top: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+  /* The font leaves more room below the digits (for descenders) than above them,
+     so even padding makes the ZIP look high. Nudge it down half a pixel... */
+  padding: 2.5px 8px 1.5px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #2f7d57;
+  font:
+    600 12px/1.4 var(--font-jetbrains-mono),
+    monospace;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgb(16 32 26 / 0.15);
+}
+/* ...or, where supported, trim the text box to the digits and pad evenly */
+@supports (text-box: trim-both cap alphabetic) {
+  .map-pin span {
+    padding: 6px 8px;
+    text-box: trim-both cap alphabetic;
+  }
 }

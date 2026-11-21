@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "model" / "src"))
 
 from config import aqi_category  # noqa: E402  (model/src)
-from features import build_features  # noqa: E402
+from features import build_features, load_aqi  # noqa: E402
 from predict import forecast, load_model  # noqa: E402
 
 from .livability import county_summaries  # noqa: E402
@@ -33,8 +33,12 @@ class DataStore:
     def __init__(self, data_dir: Path, model_path: Path, metrics_path: Path,
                  zip_path: Path, comparison_path: Path = None,
                  comparison_preds_path: Path = None):
-        self.aqi = pd.read_parquet(data_dir / "aqi_texas.parquet")
+        self.aqi = load_aqi(data_dir)
         weather = pd.read_parquet(data_dir / "weather.parquet")
+        # Per-pollutant AQI by county and by monitor (AirNow, optional)
+        an_county, an_sites = data_dir / "airnow_county.parquet", data_dir / "airnow_sites.parquet"
+        self.pollutants = pd.read_parquet(an_county) if an_county.exists() else None
+        self.sites = pd.read_parquet(an_sites) if an_sites.exists() else None
         self.counties = pd.read_csv(data_dir / "counties.csv").set_index("county_code")
         self.zips = pd.read_csv(zip_path, dtype={"zip": str}).set_index("zip")
         self.metrics = json.loads(Path(metrics_path).read_text())
@@ -126,7 +130,8 @@ class DataStore:
             active = self.counties[self.counties["active"]]
             d = _haversine_km(z["lat"], z["lon"], active["lat"], active["lon"])
             used, distance = int(d.idxmin()), float(d.min())
-        return {"zip": zip_code, "home_county_code": home,
+        return {"zip": zip_code, "zip_lat": round(float(z["lat"]), 4),
+                "zip_lon": round(float(z["lon"]), 4), "home_county_code": home,
                 "home_county_name": z["county_name"],
                 "uses_nearest_county": used != home,
                 "distance_km": round(distance, 1),
@@ -152,6 +157,38 @@ class DataStore:
                          "reliable": s["reliable"]})
         # Reliable counties by rank first, then the limited-data ones
         return sorted(rows, key=lambda r: (r["rank"] is None, r["rank"] or 0))
+
+    def pollutant_history(self, code: int, days: int = 30):
+        """Daily AQI per pollutant (AirNow, 2021 on) for the last `days` days of data."""
+        if self.pollutants is None:
+            return None
+        p = self.pollutants[self.pollutants["county_code"] == code].sort_values("date")
+        if p.empty:
+            return {"county_code": code, "pollutants": {}, "latest": {}}
+        p = p[p["date"] > p["date"].max() - pd.Timedelta(days=days)]
+        series, latest = {}, {}
+        for col in [c for c in p.columns if c.startswith("aqi_")]:
+            s = p[["date", col]].dropna()
+            if s.empty:
+                continue
+            name = col[4:]
+            series[name] = [{"date": d.strftime("%Y-%m-%d"), "aqi": int(a)}
+                            for d, a in zip(s["date"], s[col])]
+            latest[name] = series[name][-1]
+        return {"county_code": code, "pollutants": series, "latest": latest}
+
+    def map_points(self):
+        """Every monitor's AQI on the newest AirNow day (worst pollutant at that site)."""
+        if self.sites is None:
+            return None
+        day = self.sites["date"].max()
+        s = self.sites[self.sites["date"] == day]
+        worst = s.loc[s.groupby("full_aqsid")["aqi"].idxmax()]
+        return {"date": day.strftime("%Y-%m-%d"),
+                "sites": [{"site": r.site, "lat": round(float(r.lat), 4),
+                           "lon": round(float(r.lon), 4), "aqi": int(r.aqi),
+                           "pollutant": r.pollutant, "county_code": int(r.county_code)}
+                          for r in worst.itertuples()]}
 
     def model_comparison(self):
         return self.comparison

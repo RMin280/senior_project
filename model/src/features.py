@@ -14,8 +14,14 @@ WINDOWS = [7, 30]            # rolling averages ending today
 PARAMS = ["PM2.5", "Ozone", "NO2", "PM10", "CO", "SO2"]
 
 
+def load_aqi(data_dir=DATA_DIR):
+    """EPA history + AirNow recent days if update_data.py has run, else EPA only."""
+    combined = data_dir / "aqi_combined.parquet"
+    return pd.read_parquet(combined if combined.exists() else data_dir / "aqi_texas.parquet")
+
+
 def load_raw():
-    aqi = pd.read_parquet(DATA_DIR / "aqi_texas.parquet")
+    aqi = load_aqi()
     weather = pd.read_parquet(DATA_DIR / "weather.parquet")
     return aqi, weather
 
@@ -25,12 +31,14 @@ def build_features(aqi: pd.DataFrame, weather: pd.DataFrame) -> pd.DataFrame:
     frames = []
     for code, g in aqi.groupby("county_code"):
         g = g.set_index("date").sort_index()
-        full = pd.date_range(g.index.min(), g.index.max(), freq="D")
+        # One extra day past the last reading, so the newest day can see tomorrow's weather
+        full = pd.date_range(g.index.min(), g.index.max() + pd.Timedelta(days=1), freq="D")
         g = g.reindex(full)
         g["county_code"] = code
         frames.append(g.rename_axis("date").reset_index())
     df = pd.concat(frames, ignore_index=True)
 
+    weather = weather.drop(columns=["source"], errors="ignore")  # archive vs forecast tag
     df = df.merge(weather, on=["county_code", "date"], how="left")
     df = df.sort_values(["county_code", "date"]).reset_index(drop=True)
     g = df.groupby("county_code", group_keys=False)
@@ -78,5 +86,5 @@ def build_features(aqi: pd.DataFrame, weather: pd.DataFrame) -> pd.DataFrame:
 
 def feature_columns(df: pd.DataFrame) -> list[str]:
     skip = {"date", "aqi", "target", "county_name", "defining_parameter",
-            "n_sites", "Category"} | set(WEATHER_VARS)
+            "n_sites", "Category", "source"} | set(WEATHER_VARS)
     return [c for c in df.columns if c not in skip]

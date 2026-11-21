@@ -1,6 +1,9 @@
 [run]
-# download_data.py only talks to outside websites (EPA, Open-Meteo); compare_models.py
-# is a multi-minute experiment script. Neither is unit tested.
+# These scripts only download from outside websites (EPA, AirNow, Open-Meteo) or run
+# multi-minute experiments. Neither kind is unit tested.
 omit =
     */download_data.py
+    */airnow.py
+    */update_data.py
     */compare_models.py
+    */experiments.py

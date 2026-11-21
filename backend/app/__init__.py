@@ -10,6 +10,8 @@ Endpoints (all JSON, all GET):
   /api/zip/<zip>                         zip -> county, latest AQI, forecast
   /api/model                             model accuracy numbers
   /api/counties/<code>/summary           long-term "is the air good here?" summary
+  /api/counties/<code>/pollutants?days=  daily AQI per pollutant (ozone, PM2.5, PM10)
+  /api/map                               every monitor's latest AQI, for the heatmap
   /api/rankings                          every county by Clean Air Score
   /api/models/comparison                 all model types compared on the test set
   /api/models/predictions/<code>         each model's test predictions for a county
@@ -129,6 +131,24 @@ def create_app(overrides=None):
         if s is None:
             return error(404, f"no summary for county {code}")
         return jsonify(s)
+
+    @app.get("/api/counties/<int:code>/pollutants")
+    def pollutants(code):
+        try:
+            days = min(max(int(request.args.get("days", 30)), 1), 3650)
+        except ValueError:
+            return error(400, "days must be a number")
+        p = store.pollutant_history(code, days)
+        if p is None:
+            return error(404, "no per-pollutant data: run model/src/update_data.py")
+        return jsonify(p)
+
+    @app.get("/api/map")
+    def map_points():
+        m = store.map_points()
+        if m is None:
+            return error(404, "no monitor data: run model/src/update_data.py")
+        return jsonify(m)
 
     @app.get("/api/rankings")
     def rankings():
