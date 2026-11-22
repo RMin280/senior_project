@@ -1,26 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import { Line, LineChart, Tooltip, YAxis } from "recharts"
-import { ChartContainer, type ChartConfig } from "@/components/ui/chart"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { PollutantHistory, PollutantPoint } from "@/lib/api"
 import { aqiColor, getCategory } from "@/lib/aqi"
-import { formatApiDate } from "@/lib/utils"
+import {
+  POLLUTANT_ABOUT,
+  POLLUTANT_ORDER,
+  PollutantTrend,
+} from "@/features/pollutants"
 
 const ranges = { "1W": 7, "1M": 30, "3M": 90, "1Y": 365, "5Y": 1826 }
 type Range = keyof typeof ranges
-
-const ABOUT: Record<string, string> = {
-  "PM2.5": "Fine particles from smoke, traffic and industry",
-  Ozone: "Smog formed by sunlight and exhaust",
-  PM10: "Dust and coarse particles",
-}
-const ORDER = ["PM2.5", "Ozone", "PM10"]
-
-const chartConfig = {
-  aqi: { label: "AQI", color: "var(--aqi-sensitive)" },
-} satisfies ChartConfig
 
 function lastDays(points: PollutantPoint[], days: number) {
   if (points.length === 0) return points
@@ -37,7 +28,7 @@ export function PollutantSparklines({
   data: PollutantHistory | null
 }) {
   const [range, setRange] = useState<Range>("1M")
-  const names = ORDER.filter((n) => data?.pollutants[n]?.length)
+  const names = POLLUTANT_ORDER.filter((n) => data?.pollutants[n]?.length)
 
   return (
     <section aria-labelledby="in-the-air" className="flex flex-col gap-3">
@@ -97,46 +88,8 @@ export function PollutantSparklines({
                   : category.name}
               </div>
             </div>
-            <div title={ABOUT[name]}>
-              <ChartContainer
-                config={chartConfig}
-                className="aspect-auto h-14 w-full"
-              >
-                <LineChart
-                  data={points}
-                  margin={{ top: 4, right: 4, bottom: 4, left: 4 }}
-                >
-                  <YAxis
-                    hide
-                    domain={[0, (max: number) => Math.max(60, max)]}
-                  />
-                  <Tooltip
-                    cursor={{ stroke: "var(--border)" }}
-                    content={({ active, payload }) =>
-                      active && payload?.length ? (
-                        <div className="rounded-lg border bg-card px-2 py-1 text-xs shadow-raised">
-                          {formatApiDate(payload[0].payload.date, {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                          {" · "}
-                          <b>AQI {payload[0].payload.aqi}</b>
-                        </div>
-                      ) : null
-                    }
-                  />
-                  <Line
-                    dataKey="aqi"
-                    type="monotone"
-                    stroke="var(--color-aqi)"
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--card)" }}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              </ChartContainer>
+            <div title={POLLUTANT_ABOUT[name]}>
+              <PollutantTrend points={points} />
             </div>
           </div>
         )

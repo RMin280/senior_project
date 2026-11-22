@@ -6,7 +6,7 @@ import type { CircleMarker, CircleMarkerOptions } from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { categories, getCategory } from "@/lib/aqi"
 import type { MonitorReading } from "@/lib/api"
-import { cn } from "@/lib/utils"
+import { cn, distanceMiles } from "@/lib/utils"
 
 type Pin = { lat: number; lon: number; label: string }
 
@@ -16,23 +16,27 @@ type AqiHeatmapProps = {
   pin?: Pin
   /* name of the monitor picked on the map, drawn larger */
   selected?: string
+  /* The dashboard's look: no street tiles, Texas in white under a soft haze, the
+     neighboring states as faint outlines, and a fixed view (no zoom or drag, so the page
+     scrolls past it). The dots still open a monitor. */
+  plain?: boolean
 }
 
 // Texas bounding box, a little padded
 const BOUNDS = { west: -107, east: -93.3, south: 25.6, north: 36.7 }
 const GRID_W = 360
 // Past this distance from every monitor, the color fades out (we don't know the air there)
-const FADE_START_KM = 60
-const FADE_END_KM = 180
+const FADE_START_MILES = 37
+const FADE_END_MILES = 112
 // Each spot on the map blends only its nearest monitors, closer ones counting much more
 // (1/distance^POWER). Blending all of them let far-away readings wash out a local one.
 const NEAREST = 6
 const POWER = 3
 
 // Monitor dots, and the one picked on the map
-const DOT: CircleMarkerOptions = { radius: 4, weight: 1.5, color: "#ffffff" }
+const DOT: CircleMarkerOptions = { radius: 7, weight: 2.5, color: "#ffffff" }
 const PICKED_DOT: CircleMarkerOptions = {
-  radius: 8,
+  radius: 11,
   weight: 3,
   color: "#10201a",
 }
@@ -41,16 +45,6 @@ const PICKED_DOT: CircleMarkerOptions = {
 const mercY = (lat: number) =>
   Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360))
 const invMercY = (y: number) => (360 / Math.PI) * Math.atan(Math.exp(y)) - 90
-
-function km(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const r = Math.PI / 180
-  const dLat = (lat2 - lat1) * r
-  const dLon = (lon2 - lon1) * r
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dLon / 2) ** 2
-  return 12742 * Math.asin(Math.sqrt(a))
-}
 
 const escapeHtml = (text: string) =>
   text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
@@ -71,7 +65,11 @@ function makeColorScale() {
 }
 
 /* Inverse-distance-weighted AQI surface from the nearest monitors, clipped to the Texas outline */
-function drawSurface(sites: MonitorReading[], outline: number[][][]) {
+function drawSurface(
+  sites: MonitorReading[],
+  outline: number[][][],
+  blur: number,
+) {
   const yTop = mercY(BOUNDS.north)
   const yBottom = mercY(BOUNDS.south)
   const gridH = Math.round(
@@ -96,7 +94,7 @@ function drawSurface(sites: MonitorReading[], outline: number[][][]) {
         BOUNDS.west + ((col + 0.5) / GRID_W) * (BOUNDS.east - BOUNDS.west)
       dist.fill(Infinity)
       for (const s of sites) {
-        const d = Math.max(km(lat, lon, s.lat, s.lon), 1)
+        const d = Math.max(distanceMiles(lat, lon, s.lat, s.lon), 1)
         if (d >= dist[NEAREST - 1]) continue
         // Insert, keeping the list sorted
         let k = NEAREST - 1
@@ -116,11 +114,13 @@ function drawSurface(sites: MonitorReading[], outline: number[][][]) {
       }
       const nearest = dist[0]
       const fade =
-        nearest <= FADE_START_KM
+        nearest <= FADE_START_MILES
           ? 1
           : Math.max(
               0,
-              1 - (nearest - FADE_START_KM) / (FADE_END_KM - FADE_START_KM),
+              1 -
+                (nearest - FADE_START_MILES) /
+                  (FADE_END_MILES - FADE_START_MILES),
             )
       const [r, g, b] = colorOf(total / weight)
       const i = (row * GRID_W + col) * 4
@@ -148,14 +148,19 @@ function drawSurface(sites: MonitorReading[], outline: number[][][]) {
     out.closePath()
   }
   out.clip()
-  // Just enough blur to soften the edges between categories
-  out.filter = "blur(1.5px)"
+  // Blur softens the edges between categories (a lot more on the plain map, so areas blend)
+  out.filter = `blur(${blur}px)`
   out.drawImage(surface, 0, 0)
   return clipped.toDataURL()
 }
 
 /** Map of Texas colored by the latest AQI at each monitor, blended in between. */
-export function AqiHeatmap({ sites, pin, selected }: AqiHeatmapProps) {
+export function AqiHeatmap({
+  sites,
+  pin,
+  selected,
+  plain = false,
+}: AqiHeatmapProps) {
   const container = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
@@ -174,13 +179,25 @@ export function AqiHeatmap({ sites, pin, selected }: AqiHeatmapProps) {
 
     async function setup() {
       const L = (await import("leaflet")).default
-      const outline = await fetch("/texas.json").then((r) => r.json())
+      const [outline, neighbors] = await Promise.all([
+        fetch("/texas.json").then((r) => r.json()),
+        plain ? fetch("/neighbors.json").then((r) => r.json()) : null,
+      ])
       if (cancelled || !container.current) return
 
       map = L.map(container.current, {
         zoomControl: false,
-        scrollWheelZoom: true,
-        attributionControl: true,
+        scrollWheelZoom: !plain,
+        attributionControl: !plain,
+        ...(plain && {
+          dragging: false,
+          touchZoom: false,
+          doubleClickZoom: false,
+          boxZoom: false,
+          keyboard: false,
+          // Fractional zoom, so Texas fills its box instead of snapping a size smaller
+          zoomSnap: 0.1,
+        }),
       })
       // A view must be set before vector layers are added
       map.fitBounds(
@@ -188,30 +205,57 @@ export function AqiHeatmap({ sites, pin, selected }: AqiHeatmapProps) {
           [25.8, -106.7],
           [36.5, -93.5],
         ],
-        { paddingTopLeft: [window.innerWidth >= 1024 ? 440 : 0, 0] },
+        plain
+          ? // Wide screens: clear of the nav pill above and the card's overlap on the left
+            window.innerWidth >= 1024
+            ? { paddingTopLeft: [48, 112], paddingBottomRight: [64, 64] }
+            : { padding: [16, 16] }
+          : { paddingTopLeft: [window.innerWidth >= 1024 ? 440 : 0, 0] },
       )
-      L.control.zoom({ position: "bottomright" }).addTo(map)
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 12,
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(map)
+      // fitBounds centers Texas; on wide screens pin its west tip near the card instead,
+      // so the spare width goes to the neighbors on the right, not a gap by the card
+      if (plain && window.innerWidth >= 1024) {
+        const westX = map.latLngToContainerPoint([31.8, -106.65]).x
+        map.panBy([westX - 72, 0], { animate: false })
+      }
+      if (!plain) {
+        L.control.zoom({ position: "bottomright" }).addTo(map)
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 12,
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(map)
+      } else {
+        L.geoJSON(neighbors, {
+          style: { color: "#56665e", weight: 1, fill: false, opacity: 0.45 },
+          interactive: false,
+        }).addTo(map)
+        // The state lit in white, in its own pane under the haze (overlays are z-index 400)
+        map.createPane("land").style.zIndex = "350"
+        L.geoJSON(outline, {
+          pane: "land",
+          style: { stroke: false, fillColor: "#ffffff", fillOpacity: 1 },
+          interactive: false,
+        }).addTo(map)
+      }
 
       const rings: number[][][] = outline.geometry.coordinates.map(
         (polygon: number[][][]) => polygon[0],
       )
       if (sites.length > 0) {
         L.imageOverlay(
-          drawSurface(sites, rings),
+          drawSurface(sites, rings, plain ? 7 : 1.5),
           [
             [BOUNDS.south, BOUNDS.west],
             [BOUNDS.north, BOUNDS.east],
           ],
-          { opacity: 0.85, interactive: false },
+          { opacity: plain ? 0.6 : 0.85, interactive: false },
         ).addTo(map)
       }
       L.geoJSON(outline, {
-        style: { color: "#2f7d57", weight: 1.5, fill: false, opacity: 0.6 },
+        style: plain
+          ? { color: "#56665e", weight: 1.25, fill: false, opacity: 0.55 }
+          : { color: "#2f7d57", weight: 1.5, fill: false, opacity: 0.6 },
         interactive: false,
       }).addTo(map)
 
@@ -255,7 +299,7 @@ export function AqiHeatmap({ sites, pin, selected }: AqiHeatmapProps) {
       cancelled = true
       map?.remove()
     }
-  }, [sitesJson, pinJson, pathname, router])
+  }, [sitesJson, pinJson, pathname, router, plain])
 
   // Draw the picked monitor larger, on top of the others
   useEffect(() => {
@@ -271,6 +315,8 @@ export function AqiHeatmap({ sites, pin, selected }: AqiHeatmapProps) {
       role="region"
       aria-label="Map of Texas air quality"
       className="h-full w-full bg-sky"
+      // Inline, to beat leaflet.css's gray container background
+      style={plain ? { background: "transparent" } : undefined}
     />
   )
 }

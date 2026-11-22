@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card"
 import { AqiChip } from "./aqi-chip"
 import { AqiScale } from "./aqi-scale"
+import { ChangeChip, signed } from "./change-chip"
 import { getCategory } from "@/lib/aqi"
 
 type AqiCardProps = {
@@ -20,6 +21,8 @@ type AqiCardProps = {
   /* what the big number is, e.g. "Our forecast for Monday, November 9" */
   label: string
   advice?: string
+  /* the AQI it's compared with, and what that is, e.g. "vs latest reading" */
+  change?: { from: number; note: string }
   measured: string
   changeHref: string
 }
@@ -30,6 +33,7 @@ export function AqiCard({
   aqi,
   label,
   advice,
+  change,
   measured,
   changeHref,
 }: AqiCardProps) {
@@ -38,7 +42,7 @@ export function AqiCard({
   return (
     <Card className="w-full max-w-md gap-3 rounded-2xl text-base shadow-raised ring-0 [--card-spacing:--spacing(8)]">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 font-display">
           <MapPinIcon size={18} className="text-primary" aria-hidden />
           {/* One span, so the place wraps as a single run of text beside the icon */}
           <span>{place}</span>
@@ -61,6 +65,16 @@ export function AqiCard({
           {label}
         </p>
         <AqiNumber aqi={aqi} />
+        {/* Like a stock quote: the % chip, then the change in points and what it's against */}
+        {change && (
+          <p className="-mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm">
+            <ChangeChip from={change.from} to={aqi} />
+            <span className="font-medium tabular-nums">
+              {signed(aqi - change.from)}
+            </span>
+            <span className="text-muted-foreground">{change.note}</span>
+          </p>
+        )}
 
         <AqiChip aqi={aqi} />
         <p className="font-display text-xl leading-snug">

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import Link from "next/link"
 import { ArrowLeftIcon, ArrowRightIcon } from "@phosphor-icons/react/ssr"
 import { AqiChip, AqiScale } from "@/features/air-quality"
@@ -20,6 +21,8 @@ type ForecastPanelProps = {
   link: { href: string; label: string }
   /* shorter button to its left, back to the searched ZIP */
   back?: { href: string; to: string }
+  /* more sections after "In the air", e.g. the nearby list */
+  children?: ReactNode
 }
 
 /** Left-side card on the map: a place's forecast and what's in the air. */
@@ -32,6 +35,7 @@ export function ForecastPanel({
   pollutants,
   link,
   back,
+  children,
 }: ForecastPanelProps) {
   const aqi = forecast?.predicted_aqi ?? county.latest_aqi
   const category = getCategory(aqi)
@@ -108,6 +112,8 @@ export function ForecastPanel({
       </section>
 
       <PollutantSparklines data={pollutants} />
+
+      {children}
 
       <div className="flex gap-2">
         {back && (

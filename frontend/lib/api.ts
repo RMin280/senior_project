@@ -45,6 +45,12 @@ export async function getZip(zip: string): Promise<ZipResult | null> {
   return response.json()
 }
 
+export async function getCounties(): Promise<County[]> {
+  const response = await fetch(`${API_URL}/api/counties`)
+  if (!response.ok) throw new Error(`API returned ${response.status}`)
+  return response.json()
+}
+
 /* one county's latest reading, or null if the API has no data for it */
 export async function getCounty(countyCode: number): Promise<County | null> {
   const response = await fetch(`${API_URL}/api/counties/${countyCode}`)
@@ -72,10 +78,13 @@ export type HistoryPoint = {
   driver: string
 }
 
-/* load all readings for ocunties up front */
-export async function getHistory(countyCode: number): Promise<HistoryPoint[]> {
+/* load all readings for ocunties up front, or from `start` (YYYY-MM-DD) on */
+export async function getHistory(
+  countyCode: number,
+  start = "2015-01-01",
+): Promise<HistoryPoint[]> {
   const response = await fetch(
-    `${API_URL}/api/counties/${countyCode}/history?start=2015-01-01`,
+    `${API_URL}/api/counties/${countyCode}/history?start=${start}`,
   )
 
   if (!response.ok) throw new Error(`API returned ${response.status}`)

@@ -147,27 +147,50 @@
   height: 40px;
   filter: drop-shadow(0 3px 6px rgb(16 32 26 / 0.25));
 }
+/* The ZIP under the pin: brand-filled with a white ring, so it reads over any tile or haze color */
 .map-pin span {
   position: absolute;
-  top: 42px;
+  top: 43px;
   left: 50%;
   transform: translateX(-50%);
   /* The font leaves more room below the digits (for descenders) than above them,
-     so even padding makes the ZIP look high. Nudge it down half a pixel... */
-  padding: 2.5px 8px 1.5px;
+     so even padding makes the ZIP look high. Nudge it down a pixel... */
+  padding: 5px 11px 4px;
   border-radius: 999px;
-  background: #ffffff;
-  color: #2f7d57;
+  background: #2f7d57;
+  color: #ffffff;
   font:
-    600 12px/1.4 var(--font-jetbrains-mono),
-    monospace;
+    600 15px/1.2 var(--font-geist),
+    system-ui,
+    sans-serif;
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgb(16 32 26 / 0.15);
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 3px 10px rgb(16 32 26 / 0.28);
 }
 /* ...or, where supported, trim the text box to the digits and pad evenly */
 @supports (text-box: trim-both cap alphabetic) {
   .map-pin span {
-    padding: 6px 8px;
+    padding: 7px 11px;
     text-box: trim-both cap alphabetic;
   }
+}
+
+/* Leaflet sets Helvetica/Arial on everything it draws (tooltips, attribution); use the app's face.
+   Doubled class to beat leaflet.css, which loads after this file. */
+.leaflet-container.leaflet-container {
+  font-family: var(--font-geist), system-ui, sans-serif;
+}
+.leaflet-tooltip {
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #10201a;
+  box-shadow:
+    0 1px 2px rgb(16 32 26 / 0.1),
+    0 4px 14px rgb(16 32 26 / 0.16);
 }

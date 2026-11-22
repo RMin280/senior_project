@@ -6,7 +6,9 @@ import {
   HeatmapLegend,
   MapSearch,
 } from "@/features/map"
+import { NearbyList, nearestCounties, withPrevious } from "@/features/nearby"
 import {
+  getCounties,
   getCounty,
   getForecast,
   getMapPoints,
@@ -25,11 +27,25 @@ export default async function MapPage({
 }: PageProps<"/map/[zip]">) {
   const { zip } = await params
   const { site } = await searchParams
-  const [result, points] = await Promise.all([getZip(zip), getMapPoints()])
+  const [result, points, counties] = await Promise.all([
+    getZip(zip),
+    getMapPoints(),
+    getCounties(),
+  ])
   if (!result) notFound()
   const monitor = points?.sites.find((s) => s.site === site)
   const monitorView = monitor ? await monitorPanel(monitor, zip) : null
   const panel = monitorView ?? (await zipPanel(result))
+  // The closest other monitored counties to the picked monitor, or to the ZIP
+  const from =
+    monitor && monitorView
+      ? { lat: monitor.lat, lon: monitor.lon, countyCode: monitor.county_code }
+      : {
+          lat: result.zip_lat,
+          lon: result.zip_lon,
+          countyCode: result.county.county_code,
+        }
+  const nearby = await withPrevious(nearestCounties(counties, from))
   const pin = { lat: result.zip_lat, lon: result.zip_lon, label: zip }
 
   return (
@@ -60,7 +76,9 @@ export default async function MapPage({
         </div>
 
         <div className="z-[1000] p-4 lg:absolute lg:top-4 lg:bottom-4 lg:left-4 lg:w-[400px] lg:overflow-x-hidden lg:overflow-y-auto lg:p-0">
-          <ForecastPanel {...panel} />
+          <ForecastPanel {...panel}>
+            <NearbyList places={nearby} />
+          </ForecastPanel>
         </div>
       </main>
     </div>

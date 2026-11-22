@@ -2,3 +2,4 @@
 export { AqiCard } from "./components/aqi-card"
 export { AqiChip } from "./components/aqi-chip"
 export { AqiScale } from "./components/aqi-scale"
+export { ChangeChip, signed } from "./components/change-chip"
